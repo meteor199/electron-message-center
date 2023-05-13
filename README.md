@@ -43,14 +43,18 @@ messageCenter.on('writeSettingsFile', newSettings => {
 You can remove a listener with the `off()` method.
 
 ```js
-import msgCenter from 'electron-message-center';
+import { messageCenter } from 'electron-message-center';
 
-msgCenter.on('someRoute', () => {
+messageCenter.on('someRoute', () => {
   return something();
 });
 
-msgCenter.off('someRoute'); // never mind
+messageCenter.off('someRoute'); // never mind
 ```
+
+## example
+
+- [example](https://github.com/meteor199/electron-message-center/tree/main/packages/example)
 
 ## License
 
