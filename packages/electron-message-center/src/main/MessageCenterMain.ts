@@ -1,5 +1,6 @@
-import { Listener, MessageCenterBase, Options } from '../shared/base';
-import { addListenerInMain, disposeBroadcast, removeListenerInMain } from './mainProcess';
+import { ListenerInfo } from '../shared';
+import { Listener, MessageCenterBase, Options } from '../shared/';
+import { addListenerInMain, disposeBroadcast, getAllListeners, removeListenerInMain } from './mainProcess';
 
 export class MessageCenter extends MessageCenterBase {
   public constructor(opts?: Options) {
@@ -16,5 +17,9 @@ export class MessageCenter extends MessageCenterBase {
 
   public off(route: string, listener?: Listener): void {
     removeListenerInMain(route, listener);
+  }
+
+  public getAllListeners(route?: string): Promise<ListenerInfo[]> {
+    return Promise.resolve(getAllListeners(route));
   }
 }

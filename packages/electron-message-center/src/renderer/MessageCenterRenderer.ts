@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'; // eslint-disable-line
-import { Listener, MessageCenterBase, Options, createId } from '../shared/base';
-import { MessageChannelEnum } from '../shared';
+import { Listener, MessageCenterBase, Options, createId } from '../shared/';
+import { ListenerInfo, MessageChannelEnum } from '../shared';
 
 let listenerMap: { id: number; route: string; listener: Listener }[] = [];
 
@@ -42,5 +42,9 @@ export class MessageCenter extends MessageCenterBase {
       listenerMap = listenerMap.filter(item => item.route !== route);
       ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { route });
     }
+  }
+
+  public getAllListeners(route?: string): Promise<ListenerInfo[]> {
+    return ipcRenderer.invoke(MessageChannelEnum.RENDERER_TO_MAIN_GET_ALL_LISTENERS, { route });
   }
 }

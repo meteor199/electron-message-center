@@ -83,5 +83,33 @@ describe('main', () => {
         messageCenterMain.broadcast(route, 'broadcast');
         messageCenterMain.broadcast(newRoute, 'broadcast');
       }));
+
+    it('get all listeners', () =>
+      new Promise<void>(resolve => {
+        function first() {
+          expect.fail('not off successfully');
+        }
+        messageCenterMain.on(route, first);
+        messageCenterMain.on(route, first);
+
+        messageCenterMain.getAllListeners(route).then(listeners => {
+          expect(listeners.length).toBe(2);
+          resolve();
+        });
+      }));
+
+    it('get all listeners when off', () =>
+      new Promise<void>(resolve => {
+        function first() {
+          expect.fail('not off successfully');
+        }
+        messageCenterMain.on(route, first);
+        messageCenterMain.on(route, first);
+        messageCenterMain.off(route);
+        messageCenterMain.getAllListeners(route).then(listeners => {
+          expect(listeners.length).toBe(0);
+          resolve();
+        });
+      }));
   });
 });

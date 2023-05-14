@@ -1,6 +1,5 @@
 import { ipcMain, WebContents } from 'electron'; // eslint-disable-line
-import { MessageChannelEnum } from '../shared';
-import { Listener } from '../shared/base';
+import { ListenerInfo, MessageChannelEnum, Listener } from '../shared';
 
 let listenerMap: {
   type: 'renderer' | 'main';
@@ -60,6 +59,16 @@ export function removeListenerInMain(route: string, listener?: Listener) {
   }
 }
 
+export function getAllListeners(route?: string): ListenerInfo[] {
+  return listenerMap
+    .filter(item => (route ? item.route === route : true))
+    .map(item => ({
+      route: item.route,
+      webContentId: item.rendererWebContents?.id,
+      type: item.type,
+    }));
+}
+
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route: string }, ...args: unknown[]) => {
   disposeBroadcast(info, ...args);
 });
@@ -92,4 +101,7 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids?: number
       return true;
     });
   }
+});
+ipcMain.handle(MessageChannelEnum.RENDERER_TO_MAIN_GET_ALL_LISTENERS, (event, info: { route: string }) => {
+  return getAllListeners(info.route);
 });
