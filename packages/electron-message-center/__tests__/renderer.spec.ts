@@ -3,6 +3,7 @@ import { MessageChannelEnum } from '../src/shared';
 import { messageCenter } from '../src/renderer';
 import { generateRoute } from './utils';
 import '../src/main';
+import { messageCenter as messageCenterMain } from '../src/main';
 
 describe('renderer', () => {
   describe('send', () => {
@@ -64,6 +65,8 @@ describe('renderer', () => {
         }
         messageCenter.on(route, first);
         messageCenter.on(route, first);
+        messageCenterMain.on(route, first);
+        messageCenterMain.on(route, first);
 
         const newRoute = generateRoute();
 

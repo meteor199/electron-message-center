@@ -30,17 +30,16 @@ let listenerMap: {
  * @param args arguments
  */
 export function disposeBroadcast(info: { route: string }, ...args: unknown[]) {
-  listenerMap.forEach(item => {
-    if (item.route === info.route) {
-      if (item.type === 'renderer') {
-        item.rendererWebContents.send(
-          MessageChannelEnum.MAIN_TO_RENDERER_BROADCAST,
-          { id: item.rendererListenerId },
-          ...args
-        );
-      } else {
-        item.mainListener(...args);
-      }
+  const filteredListeners = listenerMap.filter(item => item.route === info.route);
+  filteredListeners.forEach(item => {
+    if (item.type === 'renderer') {
+      item.rendererWebContents.send(
+        MessageChannelEnum.MAIN_TO_RENDERER_BROADCAST,
+        { id: item.rendererListenerId },
+        ...args
+      );
+    } else {
+      item.mainListener(...args);
     }
   });
 }
@@ -54,15 +53,11 @@ export function addListenerInMain(route: string, listener: Listener) {
 }
 
 export function removeListenerInMain(route: string, listener?: Listener) {
-  listenerMap = listenerMap.filter(item => {
-    if (!listener) {
-      return item.route !== route;
-    }
-    if (item.route === route && item.mainListener === listener) {
-      return false;
-    }
-    return true;
-  });
+  if (!listener) {
+    listenerMap = listenerMap.filter(item => item.route !== route);
+  } else {
+    listenerMap = listenerMap.filter(item => !(item.route === route && item.mainListener === listener));
+  }
 }
 
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route: string }, ...args: unknown[]) => {
@@ -86,6 +81,15 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string
   });
 });
 
-ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids: number[] }) => {
-  listenerMap = listenerMap.filter(item => !info.ids.includes(item.rendererListenerId));
+ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids?: number[]; route?: string }) => {
+  if (info.route) {
+    listenerMap = listenerMap.filter(item => info.route !== item.route);
+  } else if (info.ids) {
+    listenerMap = listenerMap.filter(item => {
+      if (event.sender === item.rendererWebContents && info.ids.includes(item.rendererListenerId)) {
+        return false;
+      }
+      return true;
+    });
+  }
 });

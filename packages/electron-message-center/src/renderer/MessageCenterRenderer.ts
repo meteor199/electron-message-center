@@ -29,13 +29,18 @@ export class MessageCenter extends MessageCenterBase {
 
   public off(route: string, listener?: Listener): void {
     const ids: number[] = [];
-    listenerMap = listenerMap.filter(item => {
-      if (item.route === route && (listener === undefined || listener === item.listener)) {
-        ids.push(item.id);
-        return false;
-      }
-      return true;
-    });
-    ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { ids });
+    if (listener) {
+      listenerMap = listenerMap.filter(item => {
+        if (item.route === route && listener === item.listener) {
+          ids.push(item.id);
+          return false;
+        }
+        return true;
+      });
+      ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { ids });
+    } else {
+      listenerMap = listenerMap.filter(item => item.route !== route);
+      ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { route });
+    }
   }
 }
