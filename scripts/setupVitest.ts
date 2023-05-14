@@ -66,7 +66,9 @@ const asserted: Set<string> = new Set();
 beforeEach(() => {
   asserted.clear();
   warn = vi.spyOn(console, 'warn');
-  warn.mockImplementation(() => {});
+  warn.mockImplementation(() => {
+    //
+  });
 });
 
 afterEach(() => {
