@@ -42,7 +42,7 @@ describe('renderer', () => {
         messageCenter.broadcast(route, 'broadcast');
       }));
 
-    it('broadcast off', () =>
+    it('broadcast off one listener', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');
@@ -55,6 +55,25 @@ describe('renderer', () => {
         });
         messageCenter.off(route, first);
         messageCenter.broadcast(route, 'broadcast');
+      }));
+
+    it('broadcast off all listeners', () =>
+      new Promise<void>(resolve => {
+        function first() {
+          expect.fail('not off successfully');
+        }
+        messageCenter.on(route, first);
+        messageCenter.on(route, first);
+
+        const newRoute = generateRoute();
+
+        messageCenter.on(newRoute, (args: string) => {
+          expect(args).to.equal('broadcast');
+          resolve();
+        });
+        messageCenter.off(route);
+        messageCenter.broadcast(route, 'broadcast');
+        messageCenter.broadcast(newRoute, 'broadcast');
       }));
   });
 });

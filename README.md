@@ -24,21 +24,31 @@ require('electron-message-center/main');
 ## Broadcast
 
 ```js
-// in first renderer
+// listen in first renderer
 import { messageCenter } from 'electron-message-center';
 messageCenter.on('writeSettingsFile', newSettings => {
   console.log(newSettings);
 });
 
-// in second renderer
+// listen in second renderer
+import { messageCenter } from 'electron-message-center';
+messageCenter.on('writeSettingsFile', newSettings => {
+  console.log(newSettings);
+});
+
+// listen in main process
+import { messageCenter } from 'electron-message-center/main';
+messageCenter.on('writeSettingsFile', newSettings => {
+  console.log(newSettings);
+});
+
+// broadcast in renderer
 import { messageCenter } from 'electron-message-center';
 messageCenter.broadcast('writeSettingsFile', '{ "name": "Jeff" }');
 
-// in third renderer
-import { messageCenter } from 'electron-message-center';
-messageCenter.on('writeSettingsFile', newSettings => {
-  console.log(newSettings);
-});
+// broadcast in main process
+import { messageCenter } from 'electron-message-center/main';
+messageCenter.broadcast('writeSettingsFile', '{ "name": "Jeff" }');
 ```
 
 ## Advanced usage
@@ -48,11 +58,13 @@ messageCenter.on('writeSettingsFile', newSettings => {
 You can remove a listener with the `off()` method.
 
 ```js
+// in renderer
 import { messageCenter } from 'electron-message-center';
 
-messageCenter.on('someRoute', () => {
-  return something();
-});
+messageCenter.off('someRoute'); // never mind
+
+// in main process
+import { messageCenter } from 'electron-message-center/main';
 
 messageCenter.off('someRoute'); // never mind
 ```

@@ -39,5 +39,3 @@ export class MessageCenter extends MessageCenterBase {
     ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { ids });
   }
 }
-
-export const messageCenter = new MessageCenter();
