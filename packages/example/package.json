@@ -6,7 +6,7 @@
         "dev": "electron index.js"
     },
     "dependencies": {
-        "electron-message-center": "0.0.1"
+        "electron-message-center": "*"
     },
     "devDependencies": {
         "electron": "22.3.9"

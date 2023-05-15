@@ -11,14 +11,16 @@ describe('basic', () => {
     ipcRenderer.removeAllListeners('');
   });
 
-  test('test env', async () => {
+  test('should pass when comparing "1" to "1"', async () => {
     expect('1').toBe('1');
   });
-  test('mock ipc function exist', async () => {
+
+  test('should have ipcMain.on and ipcRenderer.on as functions', async () => {
     expect(typeof ipcMain.on).toBe('function');
     expect(typeof ipcRenderer.on).toBe('function');
   });
-  test('mock ipc should success', async () => {
+
+  test('should successfully send and receive messages between ipcMain and ipcRenderer', async () => {
     const toMainRoute = generateRoute();
     const toRenderer = generateRoute();
     ipcMain.on(toMainRoute, (event, num) => {

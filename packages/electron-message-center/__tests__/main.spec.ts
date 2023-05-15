@@ -4,7 +4,7 @@ import { generateRoute } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain } from '../src/main';
 
-describe('main', () => {
+describe('message center in main process', () => {
   describe('broadcast', () => {
     let route: string;
 
@@ -50,7 +50,7 @@ describe('main', () => {
         });
       }));
 
-    it('broadcast off one listener', () =>
+    it('removes one listener', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');
@@ -65,7 +65,7 @@ describe('main', () => {
         messageCenterMain.broadcast(route, 'broadcast');
       }));
 
-    it('broadcast off all listeners', () =>
+    it('removes all listeners', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');
@@ -98,7 +98,7 @@ describe('main', () => {
         });
       }));
 
-    it('get all listeners when off', () =>
+    it('get all listeners when removed all listeners', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');

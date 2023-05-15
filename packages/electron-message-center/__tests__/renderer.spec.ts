@@ -5,8 +5,8 @@ import { generateRoute } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain } from '../src/main';
 
-describe('renderer', () => {
-  describe('send', () => {
+describe('message center in renderer', () => {
+  describe('broadcast', () => {
     let route: string;
 
     beforeEach(() => {
@@ -18,7 +18,7 @@ describe('renderer', () => {
       ipcRenderer.removeAllListeners();
     });
 
-    it('send to main', () =>
+    it('should broadcast message to main', () =>
       new Promise<void>(resolve => {
         ipcMain.once(
           MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST,
@@ -34,7 +34,7 @@ describe('renderer', () => {
         messageCenter.broadcast(route, 1, null, 'x', { a: 1 }, new Error('test'));
       }));
 
-    it('broadcast', () =>
+    it('should broadcast message', () =>
       new Promise<void>(resolve => {
         messageCenter.on(route, (args: string) => {
           expect(args).to.equal('broadcast');
@@ -43,7 +43,7 @@ describe('renderer', () => {
         messageCenter.broadcast(route, 'broadcast');
       }));
 
-    it('broadcast off one listener', () =>
+    it('should remove one listener', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');
@@ -58,7 +58,7 @@ describe('renderer', () => {
         messageCenter.broadcast(route, 'broadcast');
       }));
 
-    it('broadcast off all listeners', () =>
+    it('should remove all listeners ', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');
@@ -79,7 +79,7 @@ describe('renderer', () => {
         messageCenter.broadcast(newRoute, 'broadcast');
       }));
 
-    it('get all listeners', () =>
+    it('should get all listeners', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');
@@ -93,7 +93,7 @@ describe('renderer', () => {
         });
       }));
 
-    it('get all listeners when off', () =>
+    it('should get all listeners when all listeners', () =>
       new Promise<void>(resolve => {
         function first() {
           expect.fail('not off successfully');
