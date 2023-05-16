@@ -22,13 +22,15 @@ interface ListenerItem {
    */
   mainListener?: Listener;
 }
-
-let listenerList: ListenerItem[] = [];
+/**
+ * List of listeners
+ */
+export const listenerList: ListenerItem[] = [];
 
 /**
- * 记录监听关闭事件的webcontents。当此webcontents无任何监听时，应该删除关闭事件监听。
+ * Record the webcontents that listen to the close event. When this webcontents has no listeners, the close event listener should be deleted.
  */
-const webContentsMap = new WeakMap<
+export const webContentsMap = new WeakMap<
   WebContents,
   {
     data: Set<ListenerItem>;
@@ -65,19 +67,19 @@ export function addListenerInMain(route: string, listener: Listener) {
 
 export function removeListenerInMain(route: string, listener?: Listener) {
   if (listener) {
-    // 根据 route和listener 删除监听函数
+    // Remove the listener function according to route and listener
     const removed = remove(listenerList, item => listener === item.mainListener);
     removeWebContentsWhenNoListeners(removed);
     return;
   }
-  // 根据 route 删除所有监听函数
+  // Remove all listener functions according to route
   const removed = remove(listenerList, item => route == item.route);
   removeWebContentsWhenNoListeners(removed);
 }
 
 export function removeListenerInRenderer(route: string, webContent: WebContents, ids?: number[]) {
   if (ids) {
-    // 根据 route和listener 删除监听函数
+    // Remove the listener function according to route and listener
     const removed = remove(
       listenerList,
       item => webContent === item.rendererWebContents && ids.includes(item.rendererListenerId)
@@ -85,7 +87,7 @@ export function removeListenerInRenderer(route: string, webContent: WebContents,
     removeWebContentsWhenNoListeners(removed);
     return;
   }
-  // 根据 route 删除所有监听函数
+  // Remove all listener functions according to route
   const removed = remove(listenerList, item => route == item.route);
   removeWebContentsWhenNoListeners(removed);
 }
@@ -115,9 +117,10 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string
   if (webContentsMap.has(event.sender)) {
     webContentsMap.get(event.sender).data.add(data);
   } else {
-    // 确保一个webContent只设置一次
+    // Ensure that a webContent is only set once
     const removeListener = () => {
-      listenerList = listenerList.filter(item => item.rendererWebContents !== event.sender);
+      const removed = remove(listenerList, item => item.rendererWebContents === event.sender);
+      removeWebContentsWhenNoListeners(removed);
     };
     const set = new Set<ListenerItem>();
     set.add(data);
@@ -130,14 +133,18 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string
   }
 });
 
+/**
+ * Remove webContents when there are no listeners
+ * @param removed removed listeners
+ */
 function removeWebContentsWhenNoListeners(removed: ListenerItem[]) {
   for (const item of removed) {
-    // 是渲染进程， 并且渲染进程
+    // If it is a renderer process, judge whether there is a listener
     if (item.rendererWebContents) {
       const data = webContentsMap.get(item.rendererWebContents)?.data;
       if (data) {
         data.delete(item);
-        // 当webContent中不存在时，则删除webContents
+        // When there is no listener function in webContent, the close event should be unregistered and deleted from the map
         if (data.size === 0) {
           const removeListener = webContentsMap.get(item.rendererWebContents).removeListener;
           item.rendererWebContents.removeListener('destroyed', removeListener);
