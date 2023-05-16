@@ -37,7 +37,7 @@ export class MessageCenter extends MessageCenterBase {
         }
         return true;
       });
-      ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { ids });
+      ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { ids, route });
     } else {
       listenerMap = listenerMap.filter(item => item.route !== route);
       ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { route });

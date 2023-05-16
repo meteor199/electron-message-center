@@ -7,8 +7,8 @@
     "prepublishOnly": "npm run build",
     "clean": "rimraf build"
   },
-  "main": "dist/renderer/renderer.js",
-  "types": "dist/renderer/renderer.d.ts",
+  "main": "dist/renderer/index.js",
+  "types": "dist/renderer/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/meteor199/electron-message-center"

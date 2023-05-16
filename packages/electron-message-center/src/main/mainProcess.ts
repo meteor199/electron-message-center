@@ -1,7 +1,7 @@
-import { ipcMain, WebContents } from 'electron'; // eslint-disable-line
-import { ListenerInfo, MessageChannelEnum, Listener } from '../shared';
+import { ipcMain, webContents, WebContents } from 'electron'; // eslint-disable-line
+import { ListenerInfo, MessageChannelEnum, Listener, remove } from '../shared';
 
-let listenerMap: {
+interface ListenerItem {
   type: 'renderer' | 'main';
   /**
    * message channel
@@ -18,18 +18,30 @@ let listenerMap: {
   rendererWebContents?: WebContents;
 
   /**
-   * main process listener callback
+   * main process listener
    */
   mainListener?: Listener;
-}[] = [];
+}
 
+let listenerList: ListenerItem[] = [];
+
+/**
+ * 记录监听关闭事件的webcontents。当此webcontents无任何监听时，应该删除关闭事件监听。
+ */
+const webContentsMap = new WeakMap<
+  WebContents,
+  {
+    data: Set<ListenerItem>;
+    removeListener: () => void;
+  }
+>();
 /**
  * dispose broadcast
  * @param info message info
  * @param args arguments
  */
 export function disposeBroadcast(info: { route: string }, ...args: unknown[]) {
-  const filteredListeners = listenerMap.filter(item => item.route === info.route);
+  const filteredListeners = listenerList.filter(item => item.route === info.route);
   filteredListeners.forEach(item => {
     if (item.type === 'renderer') {
       item.rendererWebContents.send(
@@ -44,7 +56,7 @@ export function disposeBroadcast(info: { route: string }, ...args: unknown[]) {
 }
 
 export function addListenerInMain(route: string, listener: Listener) {
-  listenerMap.push({
+  listenerList.push({
     route: route,
     type: 'main',
     mainListener: listener,
@@ -52,15 +64,34 @@ export function addListenerInMain(route: string, listener: Listener) {
 }
 
 export function removeListenerInMain(route: string, listener?: Listener) {
-  if (!listener) {
-    listenerMap = listenerMap.filter(item => item.route !== route);
-  } else {
-    listenerMap = listenerMap.filter(item => !(item.route === route && item.mainListener === listener));
+  if (listener) {
+    // 根据 route和listener 删除监听函数
+    const removed = remove(listenerList, item => listener === item.mainListener);
+    removeWebContentsWhenNoListeners(removed);
+    return;
   }
+  // 根据 route 删除所有监听函数
+  const removed = remove(listenerList, item => route == item.route);
+  removeWebContentsWhenNoListeners(removed);
+}
+
+export function removeListenerInRenderer(route: string, webContent: WebContents, ids?: number[]) {
+  if (ids) {
+    // 根据 route和listener 删除监听函数
+    const removed = remove(
+      listenerList,
+      item => webContent === item.rendererWebContents && ids.includes(item.rendererListenerId)
+    );
+    removeWebContentsWhenNoListeners(removed);
+    return;
+  }
+  // 根据 route 删除所有监听函数
+  const removed = remove(listenerList, item => route == item.route);
+  removeWebContentsWhenNoListeners(removed);
 }
 
 export function getAllListeners(route?: string): ListenerInfo[] {
-  return listenerMap
+  return listenerList
     .filter(item => (route ? item.route === route : true))
     .map(item => ({
       route: item.route,
@@ -74,33 +105,52 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route:
 });
 
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string; id: number }) => {
-  listenerMap.push({
+  const data: ListenerItem = {
     route: info.route,
     rendererListenerId: info.id,
     rendererWebContents: event.sender,
     type: 'renderer',
-  });
-
-  event.sender.once('destroyed', () => {
-    listenerMap = listenerMap.filter(item => item.rendererWebContents !== event.sender);
-  });
-
-  event.sender.once('did-start-navigation', () => {
-    listenerMap = listenerMap.filter(item => item.rendererWebContents !== event.sender);
-  });
+  };
+  listenerList.push(data);
+  if (webContentsMap.has(event.sender)) {
+    webContentsMap.get(event.sender).data.add(data);
+  } else {
+    // 确保一个webContent只设置一次
+    const removeListener = () => {
+      listenerList = listenerList.filter(item => item.rendererWebContents !== event.sender);
+    };
+    const set = new Set<ListenerItem>();
+    set.add(data);
+    webContentsMap.set(event.sender, {
+      data: set,
+      removeListener: removeListener,
+    });
+    event.sender.once('destroyed', removeListener);
+    event.sender.once('did-start-navigation', removeListener);
+  }
 });
 
-ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids?: number[]; route?: string }) => {
-  if (info.route) {
-    listenerMap = listenerMap.filter(item => info.route !== item.route);
-  } else if (info.ids) {
-    listenerMap = listenerMap.filter(item => {
-      if (event.sender === item.rendererWebContents && info.ids.includes(item.rendererListenerId)) {
-        return false;
+function removeWebContentsWhenNoListeners(removed: ListenerItem[]) {
+  for (const item of removed) {
+    // 是渲染进程， 并且渲染进程
+    if (item.rendererWebContents) {
+      const data = webContentsMap.get(item.rendererWebContents)?.data;
+      if (data) {
+        data.delete(item);
+        // 当webContent中不存在时，则删除webContents
+        if (data.size === 0) {
+          const removeListener = webContentsMap.get(item.rendererWebContents).removeListener;
+          item.rendererWebContents.removeListener('destroyed', removeListener);
+          item.rendererWebContents.removeListener('did-start-navigation', removeListener);
+          webContentsMap.delete(item.rendererWebContents);
+        }
       }
-      return true;
-    });
+    }
   }
+}
+
+ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids?: number[]; route: string }) => {
+  removeListenerInRenderer(info.route, event.sender, info.ids);
 });
 ipcMain.handle(MessageChannelEnum.RENDERER_TO_MAIN_GET_ALL_LISTENERS, (event, info: { route: string }) => {
   return getAllListeners(info.route);

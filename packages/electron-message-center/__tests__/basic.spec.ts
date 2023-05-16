@@ -1,5 +1,6 @@
 import { ipcMain, ipcRenderer } from 'electron';
 import { generateRoute } from './utils';
+import { remove } from '../src/shared';
 
 describe('basic', () => {
   beforeEach(() => {
@@ -31,5 +32,13 @@ describe('basic', () => {
       expect(num).toBe(2);
     });
     ipcRenderer.send(toMainRoute, 1);
+  });
+
+  test('should remove elements from an array based on a callback function', () => {
+    const arr = [1, 2, 3, 4, 5];
+    const callback = (value: number) => value % 2 === 0;
+    const removedElements = remove(arr, callback);
+    expect(arr).toEqual([1, 3, 5]);
+    expect(removedElements).toEqual([4, 2]);
   });
 });
