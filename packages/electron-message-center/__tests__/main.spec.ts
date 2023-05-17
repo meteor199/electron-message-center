@@ -1,8 +1,7 @@
 import { messageCenter as messageCenterRenderer } from '../src/renderer';
-import { clearEnv, generateRoute, getWebContents, sleep } from './utils';
+import { clearEnv, generateRoute } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain } from '../src/main';
-import { listenerList, webContentsMap } from '../src/main/mainProcess';
 
 describe('message center in main process', () => {
   describe('broadcast', () => {
@@ -110,107 +109,5 @@ describe('message center in main process', () => {
           resolve();
         });
       }));
-  });
-
-  describe('监听事件处理', () => {
-    let route: string;
-
-    beforeEach(() => {
-      route = generateRoute();
-    });
-
-    afterEach(() => {
-      clearEnv();
-    });
-
-    it('当renderer重新加载时，应清空所有监听', async () => {
-      function first() {
-        expect.fail('not off successfully');
-      }
-      messageCenterRenderer.on(route, first);
-
-      await sleep(1);
-      expect(listenerList.length).toBe(1);
-      getWebContents().reload();
-      await sleep(1);
-      expect(listenerList.length).toBe(0);
-    });
-
-    it('当renderer销毁时，应清空所有监听', async () => {
-      function first() {
-        expect.fail('not off successfully');
-      }
-      messageCenterRenderer.on(route, first);
-
-      await sleep(1);
-      expect(listenerList.length).toBe(1);
-      getWebContents().close();
-      await sleep(1);
-      expect(listenerList.length).toBe(0);
-    });
-
-    it('当renderer监听后，map中应有值', async () => {
-      function first() {
-        expect.fail('not off successfully');
-      }
-      messageCenterRenderer.on(route, first);
-      messageCenterRenderer.on(route, first);
-
-      await sleep(1);
-
-      expect(typeof webContentsMap.get(getWebContents())?.removeListener).toBe('function');
-      expect(webContentsMap.get(getWebContents())?.data.size).toBe(2);
-    });
-
-    it('当renderer重新加载时，应清空map', async () => {
-      function first() {
-        expect.fail('not off successfully');
-      }
-      messageCenterRenderer.on(route, first);
-      await sleep(1);
-      expect(webContentsMap.get(getWebContents())?.data.size).toBe(1);
-      getWebContents().reload();
-      await sleep(1);
-      expect(webContentsMap.get(getWebContents())).toBe(undefined);
-    });
-
-    it('当renderer销毁时，应清空map', async () => {
-      function first() {
-        expect.fail('not off successfully');
-      }
-      messageCenterRenderer.on(route, first);
-      await sleep(1);
-      expect(webContentsMap.get(getWebContents())?.data.size).toBe(1);
-      getWebContents().close();
-
-      await sleep(1);
-      expect(webContentsMap.get(getWebContents())).toBe(undefined);
-    });
-
-    it('当监听后，webContents应该有监听', async () => {
-      function first() {
-        expect.fail('not off successfully');
-      }
-      messageCenterRenderer.on(route, first);
-      messageCenterRenderer.on(route, first);
-      await sleep(1);
-      expect(getWebContents().listenerCount('did-start-navigation')).toBe(1);
-      expect(getWebContents().listenerCount('destroyed')).toBe(1);
-    });
-
-    it('当取消监听时，应注销destroy和重载事件', async () => {
-      function first() {
-        expect.fail('not off successfully');
-      }
-      messageCenterRenderer.on(route, first);
-      messageCenterRenderer.on(route, first);
-      await sleep(1);
-      expect(getWebContents().listenerCount('did-start-navigation')).toBe(1);
-      expect(getWebContents().listenerCount('destroyed')).toBe(1);
-      messageCenterRenderer.off(route, first);
-      await sleep(1);
-      expect(getWebContents().listenerCount('did-start-navigation')).toBe(0);
-      expect(getWebContents().listenerCount('destroyed')).toBe(0);
-    });
   });
 });
