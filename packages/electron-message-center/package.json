@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "description": "Supports inter-window communication.",
   "scripts": {
-    "build": "mkdirp build && tsc && babel src --out-dir build --source-maps",
+    "build": "mkdirp dist && tsc && babel src --out-dir dist --source-maps",
     "prepublishOnly": "npm run build",
     "clean": "rimraf build"
   },

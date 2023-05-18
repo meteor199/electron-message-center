@@ -9,7 +9,7 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: true,
+      sandbox: false,
       contextIsolation: false,
     },
     maximize: true,
@@ -21,7 +21,7 @@ function createWindow() {
   const view1 = new BrowserView({
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: true,
+      sandbox: false,
       contextIsolation: false,
     },
   });
@@ -33,7 +33,7 @@ function createWindow() {
   const view2 = new BrowserView({
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      nodeIntegration: true,
+      sandbox: false,
       contextIsolation: false,
     },
   });

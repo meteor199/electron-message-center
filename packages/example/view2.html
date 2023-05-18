@@ -6,8 +6,6 @@
 
     <title>Hello World!</title>
     <script>
-      const { messageCenter, MessageCenter } = require('electron-message-center');
-
       messageCenter.on('a', (...args) => {
         console.log('view1', ...args);
       });

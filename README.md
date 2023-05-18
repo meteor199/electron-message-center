@@ -51,6 +51,40 @@ import { messageCenter } from 'electron-message-center/main';
 messageCenter.broadcast('writeSettingsFile', '{ "name": "Jeff" }');
 ```
 
+## Preload
+
+As of Electron 5.0, `nodeIntegration` is _disabled by default._ This means that you cannot import `electron-message-center` directly. Instead, you will need to use a [preload](https://www.electronjs.org/docs/api/browser-window) script when opening a `BrowserWindow`. Preload scripts can access builtins such as `require` even if `nodeIntegration` is disabled.
+
+```js
+// main.js
+const mainWindow = new BrowserWindow({
+  webPreferences: {
+    preload: path.join(__dirname, 'preload.js'),
+    sandbox: false,
+    contextIsolation: false,
+  },
+  maximize: true,
+});
+```
+
+```js
+// preload.js
+const { messageCenter } = require('electron-message-center');
+
+window.messageCenter = messageCenter;
+```
+
+```js
+// in the web page
+
+messageCenter.on('a', (...args) => {
+  console.log('a', ...args);
+});
+function send() {
+  messageCenter.broadcast('a', 1, null, { a: 1 });
+}
+```
+
 ## Advanced usage
 
 #### Removing Listeners
