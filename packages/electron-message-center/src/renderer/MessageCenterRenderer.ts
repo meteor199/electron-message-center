@@ -1,15 +1,33 @@
 import { ipcRenderer } from 'electron'; // eslint-disable-line
-import { Listener, MessageCenterBase, Options, createId } from '../shared/';
-import { ListenerInfo, MessageChannelEnum } from '../shared';
+import { Listener, MessageCenterBase, Options, ReplayInfo, createId } from '../shared/';
+import { ListenerInfo, MessageChannelEnum, CallbackInfo } from '../shared';
 
-let listenerMap: { id: number; route: string; listener: Listener }[] = [];
+let listenerList: { id: number; route: string; listener: Listener }[] = [];
 
-ipcRenderer.on(MessageChannelEnum.MAIN_TO_RENDERER_BROADCAST, (event, info: { id: number }, ...args: any[]) => {
-  listenerMap.forEach(item => {
+ipcRenderer.on(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, async (event, info: CallbackInfo, ...args: any[]) => {
+  for (const item of listenerList) {
     if (item.id === info.id) {
-      item.listener(...args);
+      if (info.type === 'invoke') {
+        try {
+          const data = await item.listener(...args);
+          ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
+            invokeId: info.invokeId,
+            successData: data,
+          } as ReplayInfo);
+        } catch (e) {
+          ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
+            invokeId: info.invokeId,
+            errorMsg: e,
+          } as ReplayInfo);
+        }
+
+        break;
+      } else {
+        item.listener(...args);
+        break;
+      }
     }
-  });
+  }
 });
 
 export class MessageCenter extends MessageCenterBase {
@@ -23,14 +41,14 @@ export class MessageCenter extends MessageCenterBase {
 
   public on(route: string, listener: Listener): void {
     const id = createId();
-    listenerMap.push({ id, route, listener });
+    listenerList.push({ id, route, listener });
     ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_ON, { route, id });
   }
 
   public off(route: string, listener?: Listener): void {
     const ids: number[] = [];
     if (listener) {
-      listenerMap = listenerMap.filter(item => {
+      listenerList = listenerList.filter(item => {
         if (item.route === route && listener === item.listener) {
           ids.push(item.id);
           return false;
@@ -39,7 +57,7 @@ export class MessageCenter extends MessageCenterBase {
       });
       ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { ids, route });
     } else {
-      listenerMap = listenerMap.filter(item => item.route !== route);
+      listenerList = listenerList.filter(item => item.route !== route);
       ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { route });
     }
   }

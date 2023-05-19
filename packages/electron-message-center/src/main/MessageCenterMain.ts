@@ -1,6 +1,12 @@
 import { ListenerInfo } from '../shared';
 import { Listener, MessageCenterBase, Options } from '../shared/';
-import { addListenerInMain, disposeBroadcast, getAllListeners, removeListenerInMain } from './mainProcess';
+import {
+  addListenerInMain,
+  disposeBroadcast,
+  disposeInvoke,
+  getAllListeners,
+  removeListenerInMain,
+} from './mainProcess';
 
 export class MessageCenter extends MessageCenterBase {
   public constructor(opts?: Options) {
@@ -10,7 +16,9 @@ export class MessageCenter extends MessageCenterBase {
   public broadcast(route: string, ...dataArgs: unknown[]): void {
     disposeBroadcast({ route }, ...dataArgs);
   }
-
+  public invoke(route: string, ...dataArgs: unknown[]) {
+    return disposeInvoke({ route }, ...dataArgs);
+  }
   public on(route: string, listener: Listener): void {
     addListenerInMain(route, listener);
   }

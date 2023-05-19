@@ -1,5 +1,5 @@
 import { ipcMain, webContents, WebContents } from 'electron'; // eslint-disable-line
-import { ListenerInfo, MessageChannelEnum, Listener, remove } from '../shared';
+import { ListenerInfo, MessageChannelEnum, Listener, remove, CallbackInfo, ReplayInfo } from '../shared';
 
 interface ListenerItem {
   type: 'renderer' | 'main';
@@ -44,18 +44,67 @@ export const webContentsMap = new WeakMap<
  */
 export function disposeBroadcast(info: { route: string }, ...args: unknown[]) {
   const filteredListeners = listenerList.filter(item => item.route === info.route);
+
   filteredListeners.forEach(item => {
+    const callbackParams: CallbackInfo = {
+      id: item.rendererListenerId,
+      type: 'boardcast',
+    };
     if (item.type === 'renderer') {
-      item.rendererWebContents.send(
-        MessageChannelEnum.MAIN_TO_RENDERER_BROADCAST,
-        { id: item.rendererListenerId },
-        ...args
-      );
+      item.rendererWebContents.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, callbackParams, ...args);
     } else {
       item.mainListener(...args);
     }
   });
 }
+
+/**
+ * dispose broadcast
+ * @param info message info
+ * @param args arguments
+ */
+export function disposeInvoke(info: { route: string }, ...args: unknown[]) {
+  return new Promise((resolve, reject) => {
+    const item = listenerList.find(item => item.route === info.route);
+
+    if (item) {
+      if (item.type === 'renderer') {
+        const id = invokeId++;
+        invokeCallbackList.push({
+          webContent: item.rendererWebContents,
+          successCallback: resolve,
+          errorCallback: reject,
+          invokeId: id,
+        });
+        const callbackParams: CallbackInfo = {
+          id: item.rendererListenerId,
+          type: 'invoke',
+          invokeId: id,
+        };
+        item.rendererWebContents.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, callbackParams, ...args);
+      }
+    }
+  });
+}
+
+let invokeId = 0;
+export const invokeCallbackList: {
+  invokeId: number;
+  webContent: WebContents;
+  successCallback: Listener;
+  errorCallback: (err: Error) => void;
+}[] = [];
+
+ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, (event, info: ReplayInfo) => {
+  const [item] = remove(invokeCallbackList, item => item.invokeId === info.invokeId);
+  if (item) {
+    if (info.successData) {
+      item.successCallback(info.successData);
+    } else {
+      item.errorCallback(info.errorMsg);
+    }
+  }
+});
 
 export function addListenerInMain(route: string, listener: Listener) {
   listenerList.push({
