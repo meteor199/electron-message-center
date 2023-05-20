@@ -64,11 +64,11 @@ export function disposeBroadcast(info: { route: string }, ...args: unknown[]) {
  * @param args arguments
  */
 export function disposeInvoke(info: { route: string }, ...args: unknown[]) {
-  return new Promise((resolve, reject) => {
-    const item = listenerList.find(item => item.route === info.route);
+  const item = listenerList.find(item => item.route === info.route);
 
-    if (item) {
-      if (item.type === 'renderer') {
+  if (item) {
+    if (item.type === 'renderer') {
+      return new Promise((resolve, reject) => {
         const id = invokeId++;
         invokeCallbackList.push({
           webContent: item.rendererWebContents,
@@ -82,9 +82,13 @@ export function disposeInvoke(info: { route: string }, ...args: unknown[]) {
           invokeId: id,
         };
         item.rendererWebContents.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, callbackParams, ...args);
-      }
+      });
+    } else {
+      // invoke main listener
+      return Promise.resolve().then(() => item.mainListener(...args));
     }
-  });
+  }
+  return Promise.reject(new Error('no listeners found'));
 }
 
 let invokeId = 0;
