@@ -1,6 +1,6 @@
 {
   "name": "electron-message-center",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Supports inter-window communication.",
   "scripts": {
     "build": "mkdirp dist && tsc && babel src --out-dir dist --source-maps",
