@@ -2,6 +2,7 @@ import { IpcMainEvent, IpcRendererEvent } from 'electron';
 
 export const enum MessageChannelEnum {
   RENDERER_TO_MAIN_BROADCAST = 'EMC:broadcast',
+  RENDERER_TO_MAIN_INVOKE = 'EMC:invoke',
   RENDERER_TO_MAIN_ON = 'EMC:on',
   MAIN_TO_RENDERER_CALLBACK = 'EMC:callback',
   RENDERER_TO_MAIN_REPLAY = 'EMC:replay',
@@ -39,7 +40,7 @@ export interface CallbackInfo {
  * 当主进程invoke渲染进程时，渲染进程回复给主进程的类型
  */
 export interface ReplayInfo {
-  successData?: any;
-  errorMsg?: any;
+  data: unknown;
+  isSuccess: boolean;
   invokeId: number;
 }

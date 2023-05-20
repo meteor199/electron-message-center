@@ -8,9 +8,14 @@
     <script>
       messageCenter.on('a', (...args) => {
         console.log('view1', ...args);
+        return Promise.resolve('b');
       });
-      function send() {
+      function broadcast() {
         messageCenter.broadcast('a', 1, null, { a: 1 });
+      }
+      async function invoke() {
+        const ret = await messageCenter.invoke('a', 1, null, { a: 1 });
+        console.log('🚀 ~ file: view1.html:18 ~ invoke ~ ret:', ret);
       }
     </script>
   </head>
@@ -19,7 +24,8 @@
     We are using Node.js <span id="node-version"></span>, Chromium <span id="chrome-version"></span>, Chromium
     <span id="chrome-version"></span>, and Electron <span id="electron-version"></span>.
     <br />
-    <button onclick="send()">send a</button>
+    <button onclick="broadcast()">broadcast a</button>
+    <button onclick="invoke()">invoke a</button>
     <style>
       body {
         background-color: red;

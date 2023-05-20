@@ -102,10 +102,10 @@ export const invokeCallbackList: {
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, (event, info: ReplayInfo) => {
   const [item] = remove(invokeCallbackList, item => item.invokeId === info.invokeId);
   if (item) {
-    if (info.successData) {
-      item.successCallback(info.successData);
+    if (info.isSuccess) {
+      item.successCallback(info.data);
     } else {
-      item.errorCallback(info.errorMsg);
+      item.errorCallback(info.data as Error);
     }
   }
 });
@@ -158,7 +158,9 @@ export function getAllListeners(route?: string): ListenerInfo[] {
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route: string }, ...args: unknown[]) => {
   disposeBroadcast(info, ...args);
 });
-
+ipcMain.handle(MessageChannelEnum.RENDERER_TO_MAIN_INVOKE, (event, info: { route: string }, ...args: unknown[]) => {
+  return disposeInvoke(info, ...args);
+});
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string; id: number }) => {
   const data: ListenerItem = {
     route: info.route,

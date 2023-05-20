@@ -12,12 +12,14 @@ ipcRenderer.on(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, async (event, info:
           const data = await item.listener(...args);
           ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
             invokeId: info.invokeId,
-            successData: data,
+            data: data,
+            isSuccess: true,
           } as ReplayInfo);
         } catch (e) {
           ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
             invokeId: info.invokeId,
-            errorMsg: e,
+            data: e,
+            isSuccess: false,
           } as ReplayInfo);
         }
 
@@ -34,7 +36,9 @@ export class MessageCenter extends MessageCenterBase {
   public constructor(opts?: Options) {
     super(opts);
   }
-
+  public invoke(route: string, ...dataArgs: unknown[]) {
+    return ipcRenderer.invoke(MessageChannelEnum.RENDERER_TO_MAIN_INVOKE, { route }, ...dataArgs);
+  }
   public broadcast(route: string, ...dataArgs: unknown[]): void {
     ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, { route }, ...dataArgs);
   }

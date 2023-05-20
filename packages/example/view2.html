@@ -8,6 +8,7 @@
     <script>
       messageCenter.on('a', (...args) => {
         console.log('view1', ...args);
+        return Promise.resolve('b');
       });
       function send() {
         messageCenter.broadcast('a', 1, null, { a: 1 });

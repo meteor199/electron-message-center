@@ -9,4 +9,5 @@ export abstract class MessageCenterBase {
   public abstract on(route: string, listener: Listener): void;
   public abstract off(route: string, listener?: Listener): void;
   public abstract getAllListeners(route?: string): Promise<ListenerInfo[]>;
+  public abstract invoke(route: string, ...dataArgs: unknown[]): Promise<unknown>;
 }
