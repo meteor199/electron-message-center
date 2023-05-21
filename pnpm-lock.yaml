@@ -18,6 +18,7 @@ importers:
       eslint-plugin-prettier: ^4.2.1
       husky: ^8.0.3
       lint-staged: ^13.2.2
+      playwright: ^1.34.0
       prettier: ^2.8.8
       typescript: ^5.0.4
       vitest: ^0.31.0
@@ -36,9 +37,10 @@ importers:
       eslint-plugin-prettier: 4.2.1_mnhdxnhvwtt24ndv5d2pwtkrna
       husky: 8.0.3
       lint-staged: 13.2.2
+      playwright: 1.34.0
       prettier: 2.8.8
       typescript: 5.0.4
-      vitest: 0.31.0_@vitest+ui@0.31.0
+      vitest: 0.31.0_tw4rbokqc75webri722xcc2fue
 
   packages/electron-message-center:
     specifiers:
@@ -2221,7 +2223,7 @@ packages:
       istanbul-lib-source-maps: 4.0.1
       istanbul-reports: 3.1.5
       test-exclude: 6.0.0
-      vitest: 0.31.0_@vitest+ui@0.31.0
+      vitest: 0.31.0_tw4rbokqc75webri722xcc2fue
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -2269,7 +2271,7 @@ packages:
       pathe: 1.1.0
       picocolors: 1.0.0
       sirv: 2.0.3
-      vitest: 0.31.0_@vitest+ui@0.31.0
+      vitest: 0.31.0_tw4rbokqc75webri722xcc2fue
     dev: true
 
   /@vitest/utils/0.31.0:
@@ -5197,6 +5199,20 @@ packages:
       pathe: 1.1.0
     dev: true
 
+  /playwright-core/1.34.0:
+    resolution: {integrity: sha512-fMUY1+iR6kYbJF/EsOOqzBA99ZHXbw9sYPNjwA4X/oV0hVF/1aGlWYBGPVUEqxBkGANDKMziYoOdKGU5DIP5Gg==}
+    engines: {node: '>=14'}
+    dev: true
+
+  /playwright/1.34.0:
+    resolution: {integrity: sha512-fh+Q7fw7fPg2jSjDUNgo46PbKNTKQCYbeYXXbMm1hTbhPc0V62WM6h/pqWLTW0tqjfu8TCLdx7tECd/2AbYaHg==}
+    engines: {node: '>=14'}
+    hasBin: true
+    requiresBuild: true
+    dependencies:
+      playwright-core: 1.34.0
+    dev: true
+
   /postcss/8.4.23:
     resolution: {integrity: sha512-bQ3qMcpF6A/YjR55xtoTr0jGOlnPOKAIMdOWiv0EIT6HVPEaJiJB4NLljSbiHoC2RX7DN5Uvjtpbg1NPdwv1oA==}
     engines: {node: ^10 || ^12 || >=14}
@@ -6300,7 +6316,7 @@ packages:
       fsevents: 2.3.2
     dev: true
 
-  /vitest/0.31.0_@vitest+ui@0.31.0:
+  /vitest/0.31.0_tw4rbokqc75webri722xcc2fue:
     resolution: {integrity: sha512-JwWJS9p3GU9GxkG7eBSmr4Q4x4bvVBSswaCFf1PBNHiPx00obfhHRJfgHcnI0ffn+NMlIh9QGvG75FlaIBdKGA==}
     engines: {node: '>=v14.18.0'}
     hasBin: true
@@ -6350,6 +6366,7 @@ packages:
       magic-string: 0.30.0
       pathe: 1.1.0
       picocolors: 1.0.0
+      playwright: 1.34.0
       std-env: 3.3.3
       strip-literal: 1.0.1
       tinybench: 2.5.0

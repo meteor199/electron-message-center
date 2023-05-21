@@ -1,10 +1,5 @@
 import { defineConfig } from 'vitest/config';
 export default defineConfig({
-  resolve: {
-    alias: {
-      electron: './scripts/electronMock.ts',
-    },
-  },
   test: {
     globals: true,
     // disable threads on GH actions to speed it up
@@ -17,13 +12,7 @@ export default defineConfig({
     coverage: {
       provider: 'istanbul',
       reporter: ['text', 'html', 'json', 'lcov'],
-      exclude: [
-        // ...configDefaults.coverage.exclude!,
-        // DOM transitions are tested via e2e so no coverage is collected
-        'packages/runtime-dom/src/components/Transition*',
-        // mostly entries
-        'packages/vue-compat/**',
-      ],
+      exclude: [],
     },
   },
 });
