@@ -2,45 +2,51 @@
 const { app, BrowserWindow, BrowserView } = require('electron');
 const path = require('path');
 
+let isE2E = false;
+try {
+  isE2E = __TEST__;
+} catch (e) {
+  //
+}
+
 require('electron-message-center/main');
 
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
+    show: !isE2E,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       sandbox: false,
       contextIsolation: false,
     },
-    maximize: true,
   });
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html');
-  mainWindow.maximize();
-  const view1 = new BrowserView({
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      sandbox: false,
-      contextIsolation: false,
-    },
-  });
-  mainWindow.setBrowserView(view1);
-  view1.setBounds({ x: 0, y: 100, width: 1200, height: 300 });
-  view1.webContents.loadFile('view1.html');
-  view1.webContents.openDevTools();
+  mainWindow.loadFile('main.html');
+  mainWindow.webContents.openDevTools({ mode: 'right' });
 
-  const view2 = new BrowserView({
+  const window1 = new BrowserWindow({
+    show: !isE2E,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       sandbox: false,
       contextIsolation: false,
     },
   });
-  mainWindow.addBrowserView(view2);
-  view2.setBounds({ x: 0, y: 400, width: 1200, height: 300 });
-  view2.webContents.loadFile('view2.html');
-  view2.webContents.openDevTools();
+  window1.webContents.loadFile('window1.html');
+  window1.webContents.openDevTools({ mode: 'right' });
+
+  const window2 = new BrowserWindow({
+    show: !isE2E,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      sandbox: false,
+      contextIsolation: false,
+    },
+  });
+  window2.webContents.loadFile('window2.html');
+  window2.webContents.openDevTools({ mode: 'right' });
 }
 
 // This method will be called when Electron has finished

@@ -11,6 +11,9 @@ module.exports = {
   rules: {
     // 自定义规则
   },
+  globals: {
+    __TEST__: true,
+  },
   env: {
     browser: true,
     node: true,

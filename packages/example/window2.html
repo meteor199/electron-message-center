@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>window2</title>
+    <script>
+      messageCenter.on('a', (...args) => {
+        console.log('window2', ...args);
+        return Promise.resolve('b');
+      });
+      function broadcast() {
+        messageCenter.broadcast('a', 1, null, { a: 1 });
+      }
+      async function invoke() {
+        const ret = await messageCenter.invoke('a', 1, null, { a: 1 });
+        console.log('🚀 ~ file: window2.html:18 ~ invoke ~ ret:', ret);
+      }
+    </script>
+  </head>
+
+  <body>
+    <button onclick="broadcast()">broadcast a</button>
+    <button onclick="invoke()">invoke a</button>
+  </body>
+</html>
