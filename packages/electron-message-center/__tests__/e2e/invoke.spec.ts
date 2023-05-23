@@ -1,32 +1,65 @@
-import { MessageCenter } from '../../main';
-
-import { setupElectron } from './e2eUtils';
-
-declare const messageCenter: MessageCenter;
+import { setupElectron, sleep } from './e2eUtils';
 
 describe('invoke', () => {
-  test('invoking renderer in itself returns successfully', async () => {
-    const electronApp = await setupElectron();
+  const { electronApp } = setupElectron();
 
-    await electronApp.waitForEvent('window');
-    await electronApp.waitForEvent('window');
-    await electronApp.waitForEvent('window');
+  test('invoking renderer in itself should returns successfully', async () => {
+    const [main] = electronApp().windows();
 
-    const [main, first, second] = electronApp.windows();
-
-    await main.waitForLoadState();
-    await first.waitForLoadState();
-    await second.waitForLoadState();
-
-    await first.evaluate(`() => {
-      messageCenter.on('message', () => {
+    await main.evaluate(() => {
+      window.messageCenter.on('message', () => {
         return 1;
       });
-    }`);
-    const result = await first.evaluate(`() => messageCenter.invoke('message')`);
-
+    });
+    await sleep(1);
+    const result = await main.evaluate(() => {
+      return window.messageCenter.invoke('message');
+    });
     expect(result).toEqual(1);
-    // close app
-    await electronApp.close();
+  });
+
+  test('invoking renderer in another renderer process should returns successfully', async () => {
+    const [, first, second] = electronApp().windows();
+
+    await first.evaluate(() => {
+      window.messageCenter.on('message', () => {
+        return 2;
+      });
+    });
+    await sleep(1);
+    const result = await second.evaluate(() => {
+      return window.messageCenter.invoke('message');
+    });
+    expect(result).toEqual(2);
+  });
+
+  test('invoking main process in renderer process should returns successfully', async () => {
+    const [, , second] = electronApp().windows();
+
+    await electronApp().evaluate(() => {
+      global.messageCenter.on('message', () => {
+        return 3;
+      });
+    });
+    await sleep(1);
+    const result = await second.evaluate(() => {
+      return window.messageCenter.invoke('message');
+    });
+    expect(result).toEqual(3);
+  });
+
+  test('invoking renderer process in main process should returns successfully', async () => {
+    const [, first] = electronApp().windows();
+
+    await first.evaluate(() => {
+      window.messageCenter.on('message4', () => {
+        return 4;
+      });
+    });
+    await sleep(1);
+    const result = await electronApp().evaluate(() => {
+      return global.messageCenter.invoke('message4');
+    });
+    expect(result).toEqual(4);
   });
 });

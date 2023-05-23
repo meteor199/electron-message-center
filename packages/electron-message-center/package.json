@@ -3,9 +3,8 @@
   "version": "0.3.0",
   "description": "Supports inter-window communication.",
   "scripts": {
-    "build": "mkdirp dist && tsc && babel src --out-dir dist --source-maps",
-    "prepublishOnly": "npm run build",
-    "clean": "rimraf build"
+    "build": "rimraf dist && tsc -p tsconfig.build.json && babel src --out-dir dist --source-maps",
+    "prepublishOnly": "npm run build"
   },
   "main": "dist/renderer/index.js",
   "types": "dist/renderer/index.d.ts",

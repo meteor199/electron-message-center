@@ -2,7 +2,28 @@
 <html>
   <head>
     <title>main window</title>
+    <script>
+      messageCenter.on('a', (...args) => {
+        console.log('window1', ...args);
+        return Promise.resolve('b');
+      });
+      function broadcast() {
+        messageCenter.broadcast('a', 1, null, { a: 1 });
+      }
+      async function invoke() {
+        const ret = await messageCenter.invoke('a', 1, null, { a: 1 });
+        console.log(ret);
+      }
+    </script>
   </head>
 
-  <body></body>
+  <body>
+    <body>
+      <button id="broadcast" onclick="broadcast()">broadcast a</button>
+      <button id="invoke" onclick="invoke()">invoke a</button>
+
+      <div id="listen"></div>
+      <div id="invoke-result"></div>
+    </body>
+  </body>
 </html>

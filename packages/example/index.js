@@ -2,6 +2,12 @@
 const { app, BrowserWindow, BrowserView } = require('electron');
 const path = require('path');
 
+require('electron-message-center/main');
+
+const { messageCenter } = require('electron-message-center/main');
+// for testing purposes
+global.messageCenter = messageCenter;
+
 let isE2E = false;
 try {
   isE2E = __TEST__;
@@ -23,8 +29,7 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  mainWindow.loadFile('main.html');
-  mainWindow.webContents.openDevTools({ mode: 'right' });
+  mainWindow.loadFile(path.join(__dirname, 'main.html'));
 
   const window1 = new BrowserWindow({
     show: !isE2E,
@@ -34,8 +39,7 @@ function createWindow() {
       contextIsolation: false,
     },
   });
-  window1.webContents.loadFile('window1.html');
-  window1.webContents.openDevTools({ mode: 'right' });
+  window1.loadFile(path.join(__dirname, 'window1.html'));
 
   const window2 = new BrowserWindow({
     show: !isE2E,
@@ -45,8 +49,11 @@ function createWindow() {
       contextIsolation: false,
     },
   });
-  window2.webContents.loadFile('window2.html');
-  window2.webContents.openDevTools({ mode: 'right' });
+  window2.loadFile(path.join(__dirname, 'window2.html'));
+
+  // window1.webContents.openDevTools({ mode: 'right' });
+  // window2.webContents.openDevTools({ mode: 'right' });
+  // mainWindow.webContents.openDevTools({ mode: 'right' });
 }
 
 // This method will be called when Electron has finished
