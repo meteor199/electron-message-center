@@ -41,7 +41,7 @@ jobs:
           directory: ./coverage/
 
   test-e2e:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     steps:
       - uses: actions/checkout@v3
