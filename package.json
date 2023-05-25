@@ -6,10 +6,9 @@
     "lint": "eslint . --ext=.ts,.js",
     "prepare": "husky install",
     "commit": "git add . && git-cz",
-    "test": "npm run test-unit",
     "test-unit": "vitest -c vitest.unit.config.ts",
     "test-e2e": "vitest -c vitest.e2e.config.ts",
-    "test-ui": "vitest --ui",
+    "test-ui": "vitest -c vitest.unit.config.ts --ui",
     "coverage": "vitest run  -c vitest.unit.config.ts --coverage"
   },
   "devDependencies": {
