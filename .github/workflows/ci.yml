@@ -41,7 +41,7 @@ jobs:
           directory: ./coverage/
 
   test-e2e:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     steps:
       - uses: actions/checkout@v3
@@ -60,6 +60,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
+
+      - name: Install Electron dependencies
+        run: sudo apt-get install -y libgtk-3-0 libgbm1 libnss3 libasound2
 
       - name: Run e2e tests
         run: pnpm run test-e2e
