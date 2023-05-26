@@ -1,4 +1,7 @@
+import { MessageCenter } from '../../main';
 import { setupElectron, sleep } from './e2eUtils';
+
+declare let global: { messageCenter: MessageCenter };
 
 describe('invoke', () => {
   const { electronApp } = setupElectron();

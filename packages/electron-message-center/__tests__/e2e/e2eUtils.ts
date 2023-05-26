@@ -7,10 +7,6 @@ declare global {
   }
 }
 
-declare global {
-  const messageCenter: MessageCenter;
-}
-
 export const sleep = (timeouts: number) => {
   return new Promise((resolve, reject) => setTimeout(resolve, timeouts));
 };

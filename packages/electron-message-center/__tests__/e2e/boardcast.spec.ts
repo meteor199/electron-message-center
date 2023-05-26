@@ -1,9 +1,12 @@
+import { MessageCenter } from '../../main';
 import { setupElectron, sleep } from './e2eUtils';
+
+declare let global: { messageCenter: MessageCenter };
 
 describe('boardcast', () => {
   const { electronApp } = setupElectron();
 
-  test('在渲染进程发送消息，其他进程应该可以正常监听', async () => {
+  test('When sending a message in the rendering process, other processes should be able to listen normally', async () => {
     const [main, first, second] = electronApp().windows();
 
     const retPromise = Promise.all([
