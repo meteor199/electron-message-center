@@ -61,8 +61,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: update ubuntu
+        run:  sudo apt-get update
+
       - name: Install Electron dependencies
-        run: sudo apt-get install -y libgtk-3-0 libgbm1 libnss3 libasound2
+        run:  sudo apt-get install -y xvfb
 
       - name: Build
         run: |
@@ -70,7 +73,7 @@ jobs:
           npm run build
           
       - name: Run e2e tests
-        run: pnpm run test-e2e
+        run: xvfb-run --auto-servernum pnpm run test-e2e
 
   lint:
     runs-on: ubuntu-latest
