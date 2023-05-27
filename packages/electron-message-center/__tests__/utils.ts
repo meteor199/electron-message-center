@@ -11,7 +11,7 @@ export const getWebContents = () => {
 };
 
 export const sleep = (timeouts: number) => {
-  return new Promise((resolve, reject) => setTimeout(resolve, timeouts));
+  return new Promise(resolve => setTimeout(resolve, timeouts));
 };
 
 export function clearEnv() {
