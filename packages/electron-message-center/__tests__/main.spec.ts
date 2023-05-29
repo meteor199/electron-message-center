@@ -2,6 +2,7 @@ import { messageCenter as messageCenterRenderer } from '../src/renderer';
 import { clearEnv, generateRoute } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain } from '../src/main';
+import { IpcEvent } from '../src/shared';
 
 describe('message center in main process', () => {
   describe('broadcast', () => {
@@ -17,7 +18,7 @@ describe('message center in main process', () => {
 
     it('broadcast from main to render', () =>
       new Promise<void>(resolve => {
-        messageCenterRenderer.on(route, (args: string) => {
+        messageCenterRenderer.on(route, (event: IpcEvent, args: string) => {
           expect(args).to.equal('broadcast');
           resolve();
         });
@@ -28,7 +29,7 @@ describe('message center in main process', () => {
 
     it('broadcast from main to main', () =>
       new Promise<void>(resolve => {
-        messageCenterMain.on(route, (args: string) => {
+        messageCenterMain.on(route, (event: IpcEvent, args: string) => {
           expect(args).to.equal('broadcast');
           resolve();
         });
@@ -39,7 +40,7 @@ describe('message center in main process', () => {
 
     it('broadcast from renderer to main', () =>
       new Promise<void>(resolve => {
-        messageCenterMain.on(route, (args: string) => {
+        messageCenterMain.on(route, (event: IpcEvent, args: string) => {
           expect(args).to.equal('broadcast');
           resolve();
         });
@@ -55,7 +56,7 @@ describe('message center in main process', () => {
         }
         messageCenterMain.on(route, first);
 
-        messageCenterMain.on(route, (args: string) => {
+        messageCenterMain.on(route, (event: IpcEvent, args: string) => {
           expect(args).to.equal('broadcast');
           resolve();
         });
@@ -73,7 +74,7 @@ describe('message center in main process', () => {
 
         const newRoute = generateRoute();
 
-        messageCenterMain.on(newRoute, (args: string) => {
+        messageCenterMain.on(newRoute, (event: IpcEvent, args: string) => {
           expect(args).to.equal('broadcast');
           resolve();
         });

@@ -1,36 +1,39 @@
 import { ipcRenderer } from 'electron'; // eslint-disable-line
-import { Listener, MessageCenterBase, Options, ReplayInfo, createId } from '../shared/';
+import { IpcEvent, Listener, MessageCenterBase, Options, ReplayInfo, createId } from '../shared/';
 import { ListenerInfo, MessageChannelEnum, CallbackInfo } from '../shared';
 
 let listenerList: { id: number; route: string; listener: Listener }[] = [];
 
-ipcRenderer.on(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, async (event, info: CallbackInfo, ...args: any[]) => {
-  for (const item of listenerList) {
-    if (item.id === info.id) {
-      if (info.type === 'invoke') {
-        try {
-          const data = await item.listener(...args);
-          ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
-            invokeId: info.invokeId,
-            data: data,
-            isSuccess: true,
-          } as ReplayInfo);
-        } catch (e) {
-          ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
-            invokeId: info.invokeId,
-            data: e,
-            isSuccess: false,
-          } as ReplayInfo);
-        }
+ipcRenderer.on(
+  MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK,
+  async (e, event: IpcEvent, info: CallbackInfo, ...args: any[]) => {
+    for (const item of listenerList) {
+      if (item.id === info.id) {
+        if (info.type === 'invoke') {
+          try {
+            const data = await item.listener(event, ...args);
+            ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
+              invokeId: info.invokeId,
+              data: data,
+              isSuccess: true,
+            } as ReplayInfo);
+          } catch (e) {
+            ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
+              invokeId: info.invokeId,
+              data: e,
+              isSuccess: false,
+            } as ReplayInfo);
+          }
 
-        break;
-      } else {
-        item.listener(...args);
-        break;
+          break;
+        } else {
+          item.listener(event, ...args);
+          break;
+        }
       }
     }
   }
-});
+);
 
 export class MessageCenter extends MessageCenterBase {
   public constructor(opts?: Options) {

@@ -3,7 +3,7 @@ import { clearEnv, generateRoute } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain } from '../src/main';
 
-describe('message center in renderer', () => {
+describe('broadcast in renderer', () => {
   describe('broadcast', () => {
     let route: string;
 
@@ -17,7 +17,7 @@ describe('message center in renderer', () => {
 
     it('should broadcast message as arguments are right', () =>
       new Promise<void>(resolve => {
-        messageCenter.on(route, (...args: unknown[]) => {
+        messageCenter.on(route, (event, ...args: unknown[]) => {
           expect(route).toBe(route);
           expect(args[0]).to.equal(1);
           expect(args[1]).to.equal(null);
@@ -35,7 +35,7 @@ describe('message center in renderer', () => {
         }
         messageCenter.on(route, first);
 
-        messageCenter.on(route, (args: string) => {
+        messageCenter.on(route, (event, args: string) => {
           expect(args).to.equal('broadcast');
           resolve();
         });
@@ -55,7 +55,7 @@ describe('message center in renderer', () => {
 
         const newRoute = generateRoute();
 
-        messageCenter.on(newRoute, (args: string) => {
+        messageCenter.on(newRoute, (event, args: string) => {
           expect(args).to.equal('broadcast');
           resolve();
         });

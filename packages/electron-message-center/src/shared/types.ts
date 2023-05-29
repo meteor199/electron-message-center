@@ -1,5 +1,3 @@
-import { IpcMainEvent, IpcRendererEvent } from 'electron';
-
 export const enum MessageChannelEnum {
   RENDERER_TO_MAIN_BROADCAST = 'EMC:broadcast',
   RENDERER_TO_MAIN_INVOKE = 'EMC:invoke',
@@ -15,17 +13,12 @@ export interface ListenerInfo {
   type: 'main' | 'renderer';
 }
 
-type IpcEvent = IpcRendererEvent & IpcMainEvent;
-
 /**
  * For backwards compatibility, event is the (optional) LAST argument to a listener function.
  * This leads to the following verbose overload type for a listener function.
  */
-export type Listener = { (...args: any[]): void | any | Promise<any> };
+export type Listener = { (event: IpcEvent, ...args: any[]): void | any | Promise<any> };
 export type Options = { maxTimeoutMs?: number };
-// There's an `any` here it's the only way that the typescript compiler allows you to call listener(...dataArgs, event).
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WrappedListener = { (event: IpcEvent, replyChannel: string, ...dataArgs: any[]): void };
 
 /**
  * 主进程发送给渲染进程的监听者时，发送的数据类型
@@ -44,3 +37,15 @@ export interface ReplayInfo {
   isSuccess: boolean;
   invokeId: number;
 }
+
+export interface IpcEvent {
+  /**
+   * 发送方的webContentsId，假如是发送方是主进程，则为-1，
+   */
+  sourceId: number;
+}
+
+/**
+ * 主进程 webContentsId;
+ */
+export const MAIN_PROCESS_ID = -1;

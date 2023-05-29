@@ -1,5 +1,5 @@
 import { ipcMain, webContents, WebContents } from 'electron'; // eslint-disable-line
-import { ListenerInfo, MessageChannelEnum, Listener, remove, CallbackInfo, ReplayInfo } from '../shared';
+import { ListenerInfo, MessageChannelEnum, Listener, remove, CallbackInfo, ReplayInfo, IpcEvent } from '../shared';
 
 interface ListenerItem {
   type: 'renderer' | 'main';
@@ -9,9 +9,9 @@ interface ListenerItem {
   route: string;
 
   /**
-   * renderer callback function's id
+   * callback function's id
    */
-  rendererListenerId?: number;
+  listenerId: number;
   /**
    * sender renderer
    */
@@ -42,18 +42,23 @@ export const webContentsMap = new WeakMap<
  * @param info message info
  * @param args arguments
  */
-export function disposeBroadcast(info: { route: string }, ...args: unknown[]) {
+export function disposeBroadcast(info: { route: string; sourceId: number }, ...args: unknown[]) {
   const filteredListeners = listenerList.filter(item => item.route === info.route);
 
   filteredListeners.forEach(item => {
     const callbackParams: CallbackInfo = {
-      id: item.rendererListenerId,
+      id: item.listenerId,
       type: 'boardcast',
     };
+
+    const event: IpcEvent = {
+      sourceId: info.sourceId,
+    };
+
     if (item.type === 'renderer') {
-      item.rendererWebContents.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, callbackParams, ...args);
+      item.rendererWebContents!.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, event, callbackParams, ...args);
     } else {
-      item.mainListener(...args);
+      item.mainListener!(event, ...args);
     }
   });
 }
@@ -63,29 +68,33 @@ export function disposeBroadcast(info: { route: string }, ...args: unknown[]) {
  * @param info message info
  * @param args arguments
  */
-export function disposeInvoke(info: { route: string }, ...args: unknown[]) {
+export function disposeInvoke(info: { route: string; sourceId: number }, ...args: unknown[]) {
   const item = listenerList.find(item => item.route === info.route);
+
+  const event: IpcEvent = {
+    sourceId: info.sourceId,
+  };
 
   if (item) {
     if (item.type === 'renderer') {
       return new Promise((resolve, reject) => {
         const id = invokeId++;
         invokeCallbackList.push({
-          webContent: item.rendererWebContents,
+          webContent: item.rendererWebContents!,
           successCallback: resolve,
           errorCallback: reject,
           invokeId: id,
         });
         const callbackParams: CallbackInfo = {
-          id: item.rendererListenerId,
+          id: item.listenerId,
           type: 'invoke',
           invokeId: id,
         };
-        item.rendererWebContents.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, callbackParams, ...args);
+        item.rendererWebContents!.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, event, callbackParams, ...args);
       });
     } else {
       // invoke main listener
-      return Promise.resolve().then(() => item.mainListener(...args));
+      return Promise.resolve().then(() => item.mainListener!(event, ...args));
     }
   }
   return Promise.reject(new Error('no listeners found'));
@@ -95,7 +104,7 @@ let invokeId = 0;
 export const invokeCallbackList: {
   invokeId: number;
   webContent: WebContents;
-  successCallback: Listener;
+  successCallback: (value: unknown) => void;
   errorCallback: (err: Error) => void;
 }[] = [];
 
@@ -110,10 +119,11 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, (event, info: ReplayInfo)
   }
 });
 
-export function addListenerInMain(route: string, listener: Listener) {
+export function addListenerInMain(info: { route: string; listenerId: number }, listener: Listener) {
   listenerList.push({
-    route: route,
+    route: info.route,
     type: 'main',
+    listenerId: info.listenerId,
     mainListener: listener,
   });
 }
@@ -135,7 +145,7 @@ export function removeListenerInRenderer(route: string, webContent: WebContents,
     // Remove the listener function according to route and listener
     const removed = remove(
       listenerList,
-      item => webContent === item.rendererWebContents && ids.includes(item.rendererListenerId)
+      item => webContent === item.rendererWebContents && ids.includes(item.listenerId)
     );
     removeWebContentsWhenNoListeners(removed);
     return;
@@ -156,21 +166,21 @@ export function getAllListeners(route?: string): ListenerInfo[] {
 }
 
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route: string }, ...args: unknown[]) => {
-  disposeBroadcast(info, ...args);
+  disposeBroadcast({ route: info.route, sourceId: event.sender.id }, ...args);
 });
 ipcMain.handle(MessageChannelEnum.RENDERER_TO_MAIN_INVOKE, (event, info: { route: string }, ...args: unknown[]) => {
-  return disposeInvoke(info, ...args);
+  return disposeInvoke({ route: info.route, sourceId: event.sender.id }, ...args);
 });
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string; id: number }) => {
   const data: ListenerItem = {
     route: info.route,
-    rendererListenerId: info.id,
+    listenerId: info.id,
     rendererWebContents: event.sender,
     type: 'renderer',
   };
   listenerList.push(data);
   if (webContentsMap.has(event.sender)) {
-    webContentsMap.get(event.sender).data.add(data);
+    webContentsMap.get(event.sender)!.data.add(data);
   } else {
     // Ensure that a webContent is only set once
     const removeListener = () => {
@@ -201,7 +211,7 @@ function removeWebContentsWhenNoListeners(removed: ListenerItem[]) {
         data.delete(item);
         // When there is no listener function in webContent, the close event should be unregistered and deleted from the map
         if (data.size === 0) {
-          const removeListener = webContentsMap.get(item.rendererWebContents).removeListener;
+          const removeListener = webContentsMap.get(item.rendererWebContents)!.removeListener;
           item.rendererWebContents.removeListener('destroyed', removeListener);
           item.rendererWebContents.removeListener('did-start-navigation', removeListener);
           webContentsMap.delete(item.rendererWebContents);

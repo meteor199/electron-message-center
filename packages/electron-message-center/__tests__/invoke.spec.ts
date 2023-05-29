@@ -3,6 +3,7 @@ import { clearEnv, generateRoute, sleep } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain } from '../src/main';
 import { invokeCallbackList } from '../src/main/mainProcess';
+import { IpcEvent, MAIN_PROCESS_ID } from '../src/shared';
 
 describe('invoke test', () => {
   let route: string;
@@ -17,7 +18,7 @@ describe('invoke test', () => {
 
   describe('basic', () => {
     it('invoke成功后， invokeCallbackList 长度应该为0', async () => {
-      function first(num: number) {
+      function first(event: IpcEvent, num: number) {
         return num + 1;
       }
       messageCenterRenderer.on(route, first);
@@ -49,7 +50,7 @@ describe('invoke test', () => {
 
   describe('主进程 invoke 渲染进程', () => {
     it('假如有多个参数，参数应该都正确接收', async () => {
-      function first(...args: unknown[]) {
+      function first(event: IpcEvent, ...args: unknown[]) {
         expect(route).toBe(route);
         expect(args[0]).to.equal(1);
         expect(args[1]).to.equal(null);
@@ -62,9 +63,18 @@ describe('invoke test', () => {
       const ret = await messageCenterMain.invoke(route, 1, null, 'x', { a: 1 }, new Error('test'));
       expect(ret).toBe(2);
     });
-
+    it('event 应该被正确接收', async () => {
+      function first(event: IpcEvent) {
+        expect(event.sourceId).toBe(MAIN_PROCESS_ID);
+        return 2;
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const ret = await messageCenterMain.invoke(route);
+      expect(ret).toBe(2);
+    });
     it('当返回普通类型时，应收到返回值', async () => {
-      function first(num: number) {
+      function first(event: IpcEvent, num: number) {
         return num + 1;
       }
       messageCenterRenderer.on(route, first);
@@ -74,7 +84,7 @@ describe('invoke test', () => {
     });
 
     it('当返回Promise类型时，应收到返回值', async () => {
-      async function first(num: number) {
+      async function first(event: IpcEvent, num: number) {
         await sleep(1);
         return num + 2;
       }
@@ -123,7 +133,7 @@ describe('invoke test', () => {
 
   describe('主进程 invoke 主进程', () => {
     it('假如有多个参数，参数应该都正确接收', async () => {
-      function first(...args: unknown[]) {
+      function first(event: IpcEvent, ...args: unknown[]) {
         expect(route).toBe(route);
         expect(args[0]).to.equal(1);
         expect(args[1]).to.equal(null);
@@ -137,8 +147,18 @@ describe('invoke test', () => {
       expect(ret).toBe(2);
     });
 
+    it('event 应该被正确接收', async () => {
+      function first(event: IpcEvent) {
+        expect(event.sourceId).toBe(MAIN_PROCESS_ID);
+        return 2;
+      }
+      messageCenterMain.on(route, first);
+      await sleep(1);
+      const ret = await messageCenterMain.invoke(route);
+      expect(ret).toBe(2);
+    });
     it('当返回普通类型时，应收到返回值', async () => {
-      function first(num: number) {
+      function first(event: IpcEvent, num: number) {
         return num + 1;
       }
       messageCenterMain.on(route, first);
@@ -148,7 +168,7 @@ describe('invoke test', () => {
     });
 
     it('当返回Promise类型时，应收到返回值', async () => {
-      async function first(num: number) {
+      async function first(event: IpcEvent, num: number) {
         await sleep(1);
         return num + 2;
       }
@@ -198,7 +218,7 @@ describe('invoke test', () => {
 
   describe('渲染进程 invoke 主进程', () => {
     it('假如有多个参数，参数应该都正确接收', async () => {
-      function first(...args: unknown[]) {
+      function first(event: IpcEvent, ...args: unknown[]) {
         expect(route).toBe(route);
         expect(args[0]).to.equal(1);
         expect(args[1]).to.equal(null);
@@ -212,8 +232,18 @@ describe('invoke test', () => {
       expect(ret).toBe(2);
     });
 
+    it('event 应该被正确接收', async () => {
+      function first(event: IpcEvent) {
+        expect(event.sourceId).toBe((globalThis as any).webConents.id);
+        return 2;
+      }
+      messageCenterMain.on(route, first);
+      await sleep(1);
+      const ret = await messageCenterRenderer.invoke(route);
+      expect(ret).toBe(2);
+    });
     it('当返回普通类型时，应收到返回值', async () => {
-      function first(num: number) {
+      function first(event: IpcEvent, num: number) {
         return num + 1;
       }
       messageCenterMain.on(route, first);
@@ -223,7 +253,7 @@ describe('invoke test', () => {
     });
 
     it('当返回Promise类型时，应收到返回值', async () => {
-      async function first(num: number) {
+      async function first(event: IpcEvent, num: number) {
         await sleep(1);
         return num + 2;
       }
@@ -272,7 +302,7 @@ describe('invoke test', () => {
 
     describe('渲染进程 invoke 渲染进程', () => {
       it('假如有多个参数，参数应该都正确接收', async () => {
-        function first(...args: unknown[]) {
+        function first(event: IpcEvent, ...args: unknown[]) {
           expect(route).toBe(route);
           expect(args[0]).to.equal(1);
           expect(args[1]).to.equal(null);
@@ -287,7 +317,7 @@ describe('invoke test', () => {
       });
 
       it('当返回普通类型时，应收到返回值', async () => {
-        function first(num: number) {
+        function first(event: IpcEvent, num: number) {
           return num + 1;
         }
         messageCenterRenderer.on(route, first);
@@ -297,7 +327,7 @@ describe('invoke test', () => {
       });
 
       it('当返回Promise类型时，应收到返回值', async () => {
-        async function first(num: number) {
+        async function first(event: IpcEvent, num: number) {
           await sleep(1);
           return num + 2;
         }

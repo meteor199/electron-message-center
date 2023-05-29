@@ -13,7 +13,7 @@ describe('boardcast', () => {
       main.evaluate(
         () =>
           new Promise(resolve => {
-            window.messageCenter.on('message', data => {
+            window.messageCenter.on('message', (event, data) => {
               resolve(data);
             });
           })
@@ -21,7 +21,7 @@ describe('boardcast', () => {
       first.evaluate(
         () =>
           new Promise(resolve => {
-            window.messageCenter.on('message', data => {
+            window.messageCenter.on('message', (event, data) => {
               resolve(data);
             });
           })
@@ -29,7 +29,7 @@ describe('boardcast', () => {
       second.evaluate(
         () =>
           new Promise(resolve => {
-            window.messageCenter.on('message', data => {
+            window.messageCenter.on('message', (event, data) => {
               resolve(data);
             });
           })
@@ -37,7 +37,7 @@ describe('boardcast', () => {
       electronApp().evaluate(
         () =>
           new Promise(resolve => {
-            global.messageCenter.on('message', data => {
+            global.messageCenter.on('message', (event, data) => {
               resolve(data);
             });
           })
