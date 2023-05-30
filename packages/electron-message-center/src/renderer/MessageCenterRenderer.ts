@@ -1,14 +1,14 @@
 import { ipcRenderer } from 'electron'; // eslint-disable-line
 import { IpcEvent, Listener, MessageCenterBase, Options, ReplayInfo, createId } from '../shared/';
-import { ListenerInfo, MessageChannelEnum, CallbackInfo } from '../shared';
+import { ListenerInfo, MessageChannelEnum, InvokeRenderInfo } from '../shared';
 
 let listenerList: { id: number; route: string; listener: Listener }[] = [];
 
 ipcRenderer.on(
   MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK,
-  async (e, event: IpcEvent, info: CallbackInfo, ...args: any[]) => {
+  async (e, event: IpcEvent, info: InvokeRenderInfo, ...args: any[]) => {
     for (const item of listenerList) {
-      if (item.id === info.id) {
+      if (item.id === info.listenerId) {
         if (info.type === 'invoke') {
           try {
             const data = await item.listener(event, ...args);

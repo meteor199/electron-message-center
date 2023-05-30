@@ -1,6 +1,6 @@
 {
   "name": "electron-message-center",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Supports inter-window communication.",
   "scripts": {
     "build": "rimraf dist && tsc -p tsconfig.build.json && babel src --out-dir dist --source-maps",

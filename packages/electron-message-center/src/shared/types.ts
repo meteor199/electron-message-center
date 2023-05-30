@@ -23,9 +23,18 @@ export type Options = { maxTimeoutMs?: number };
 /**
  * 主进程发送给渲染进程的监听者时，发送的数据类型
  */
-export interface CallbackInfo {
-  id: number;
+export interface InvokeRenderInfo {
+  /**
+   * 渲染进程监听函数的id
+   */
+  listenerId: number;
+  /**
+   * 调用的方式
+   */
   type: 'boardcast' | 'invoke';
+  /**
+   * 假如是invoke，对应的invokeId。
+   */
   invokeId?: number;
 }
 

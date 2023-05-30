@@ -3,9 +3,8 @@ import { clearEnv, generateRoute } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain } from '../src/main';
 import { IpcEvent } from '../src/shared';
-
-describe('message center in main process', () => {
-  describe('broadcast', () => {
+describe('broadcast', () => {
+  describe('broadcast in main process', () => {
     let route: string;
 
     beforeEach(() => {
@@ -106,6 +105,95 @@ describe('message center in main process', () => {
         messageCenterMain.on(route, first);
         messageCenterMain.off(route);
         messageCenterMain.getAllListeners(route).then(listeners => {
+          expect(listeners.length).toBe(0);
+          resolve();
+        });
+      }));
+  });
+
+  describe('broadcast in renderer', () => {
+    let route: string;
+
+    beforeEach(() => {
+      route = generateRoute();
+    });
+
+    afterEach(() => {
+      clearEnv();
+    });
+
+    it('should broadcast message as arguments are right', () =>
+      new Promise<void>(resolve => {
+        messageCenterRenderer.on(route, (event, ...args: unknown[]) => {
+          expect(route).toBe(route);
+          expect(args[0]).to.equal(1);
+          expect(args[1]).to.equal(null);
+          expect(args[2]).to.equal('x');
+          expect(args[3]).toMatchObject({ a: 1 });
+          resolve();
+        });
+        messageCenterRenderer.broadcast(route, 1, null, 'x', { a: 1 }, new Error('test'));
+      }));
+
+    it('should remove one listener', () =>
+      new Promise<void>(resolve => {
+        function first() {
+          expect.fail('not off successfully');
+        }
+        messageCenterRenderer.on(route, first);
+
+        messageCenterRenderer.on(route, (event, args: string) => {
+          expect(args).to.equal('broadcast');
+          resolve();
+        });
+        messageCenterRenderer.off(route, first);
+        messageCenterRenderer.broadcast(route, 'broadcast');
+      }));
+
+    it('should remove all listeners ', () =>
+      new Promise<void>(resolve => {
+        function first() {
+          expect.fail('not off successfully');
+        }
+        messageCenterRenderer.on(route, first);
+        messageCenterRenderer.on(route, first);
+        messageCenterMain.on(route, first);
+        messageCenterMain.on(route, first);
+
+        const newRoute = generateRoute();
+
+        messageCenterRenderer.on(newRoute, (event, args: string) => {
+          expect(args).to.equal('broadcast');
+          resolve();
+        });
+        messageCenterRenderer.off(route);
+        messageCenterRenderer.broadcast(route, 'broadcast');
+        messageCenterRenderer.broadcast(newRoute, 'broadcast');
+      }));
+
+    it('should get all listeners', () =>
+      new Promise<void>(resolve => {
+        function first() {
+          expect.fail('not off successfully');
+        }
+        messageCenterRenderer.on(route, first);
+        messageCenterRenderer.on(route, first);
+
+        messageCenterRenderer.getAllListeners(route).then(listeners => {
+          expect(listeners.length).toBe(2);
+          resolve();
+        });
+      }));
+
+    it('should get all listeners when all listeners', () =>
+      new Promise<void>(resolve => {
+        function first() {
+          expect.fail('not off successfully');
+        }
+        messageCenterRenderer.on(route, first);
+        messageCenterRenderer.on(route, first);
+        messageCenterRenderer.off(route);
+        messageCenterRenderer.getAllListeners(route).then(listeners => {
           expect(listeners.length).toBe(0);
           resolve();
         });

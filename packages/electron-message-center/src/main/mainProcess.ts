@@ -1,5 +1,6 @@
 import { ipcMain, webContents, WebContents } from 'electron'; // eslint-disable-line
-import { ListenerInfo, MessageChannelEnum, Listener, remove, CallbackInfo, ReplayInfo, IpcEvent } from '../shared';
+import { ListenerInfo, MessageChannelEnum, Listener, remove, InvokeRenderInfo, ReplayInfo, IpcEvent } from '../shared';
+import { generateInvokeId } from './utils';
 
 interface ListenerItem {
   type: 'renderer' | 'main';
@@ -46,8 +47,8 @@ export function disposeBroadcast(info: { route: string; sourceId: number }, ...a
   const filteredListeners = listenerList.filter(item => item.route === info.route);
 
   filteredListeners.forEach(item => {
-    const callbackParams: CallbackInfo = {
-      id: item.listenerId,
+    const callbackParams: InvokeRenderInfo = {
+      listenerId: item.listenerId,
       type: 'boardcast',
     };
 
@@ -78,15 +79,15 @@ export function disposeInvoke(info: { route: string; sourceId: number }, ...args
   if (item) {
     if (item.type === 'renderer') {
       return new Promise((resolve, reject) => {
-        const id = invokeId++;
+        const id = generateInvokeId();
         invokeCallbackList.push({
           webContent: item.rendererWebContents!,
           successCallback: resolve,
           errorCallback: reject,
           invokeId: id,
         });
-        const callbackParams: CallbackInfo = {
-          id: item.listenerId,
+        const callbackParams: InvokeRenderInfo = {
+          listenerId: item.listenerId,
           type: 'invoke',
           invokeId: id,
         };
@@ -100,7 +101,6 @@ export function disposeInvoke(info: { route: string; sourceId: number }, ...args
   return Promise.reject(new Error('no listeners found'));
 }
 
-let invokeId = 0;
 export const invokeCallbackList: {
   invokeId: number;
   webContent: WebContents;
