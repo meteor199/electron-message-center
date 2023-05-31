@@ -1,5 +1,14 @@
 import { ipcMain, webContents, WebContents } from 'electron'; // eslint-disable-line
-import { ListenerInfo, MessageChannelEnum, Listener, remove, InvokeRenderInfo, ReplayInfo, IpcEvent } from '../shared';
+import {
+  ListenerInfo,
+  MessageChannelEnum,
+  Listener,
+  remove,
+  InvokeRenderInfo,
+  ReplayInfo,
+  IpcEvent,
+  MAIN_PROCESS_ID,
+} from '../shared';
 import { generateInvokeId } from './utils';
 
 interface ListenerItem {
@@ -158,11 +167,13 @@ export function removeListenerInRenderer(route: string, webContent: WebContents,
 export function getAllListeners(route?: string): ListenerInfo[] {
   return listenerList
     .filter(item => (route ? item.route === route : true))
-    .map(item => ({
-      route: item.route,
-      webContentId: item.rendererWebContents?.id,
-      type: item.type,
-    }));
+    .map(
+      item =>
+        ({
+          route: item.route,
+          webContentId: item.type === 'main' ? MAIN_PROCESS_ID : item.rendererWebContents?.id,
+        } as ListenerInfo)
+    );
 }
 
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route: string }, ...args: unknown[]) => {

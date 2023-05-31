@@ -7,10 +7,16 @@ export const enum MessageChannelEnum {
   RENDERER_TO_MAIN_OFF = 'EMC:off',
   RENDERER_TO_MAIN_GET_ALL_LISTENERS = 'EMC:getAllListeners',
 }
+
+/**
+ * listener info
+ */
 export interface ListenerInfo {
   route: string;
-  webContentId?: number;
-  type: 'main' | 'renderer';
+  /**
+   * 监听方的webContentsId，假如是监听方是主进程，则为-1，
+   */
+  webContentId: number;
 }
 
 /**
