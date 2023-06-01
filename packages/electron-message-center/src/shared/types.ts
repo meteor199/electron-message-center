@@ -1,3 +1,6 @@
+/**
+ * Enum for message channel types
+ */
 export const enum MessageChannelEnum {
   RENDERER_TO_MAIN_BROADCAST = 'EMC:broadcast',
   RENDERER_TO_MAIN_INVOKE = 'EMC:invoke',
@@ -9,12 +12,12 @@ export const enum MessageChannelEnum {
 }
 
 /**
- * listener info
+ * Listener information
  */
 export interface ListenerInfo {
   route: string;
   /**
-   * 监听方的webContentsId，假如是监听方是主进程，则为-1，
+   * The webContentsId of the listener, if the listener is the main process, it is -1
    */
   webContentId: number;
 }
@@ -27,25 +30,25 @@ export type Listener = { (event: IpcEvent, ...args: any[]): void | any | Promise
 export type Options = { maxTimeoutMs?: number };
 
 /**
- * 主进程发送给渲染进程的监听者时，发送的数据类型
+ * The data type sent by the main process to the renderer process when sending a listener
  */
 export interface InvokeRenderInfo {
   /**
-   * 渲染进程监听函数的id
+   * The id of the renderer process listener function
    */
   listenerId: number;
   /**
-   * 调用的方式
+   * The way to call
    */
   type: 'boardcast' | 'invoke';
   /**
-   * 假如是invoke，对应的invokeId。
+   * If it is invoke, the corresponding invokeId
    */
   invokeId?: number;
 }
 
 /**
- * 当主进程invoke渲染进程时，渲染进程回复给主进程的类型
+ * The type of data returned by the renderer process to the main process when the main process invokes the renderer process
  */
 export interface ReplayInfo {
   data: unknown;
@@ -55,12 +58,12 @@ export interface ReplayInfo {
 
 export interface IpcEvent {
   /**
-   * 发送方的webContentsId，假如是发送方是主进程，则为-1，
+   * The webContentsId of the sender, if the sender is the main process, it is -1
    */
   sourceId: number;
 }
 
 /**
- * 主进程 webContentsId;
+ * The webContentsId of the main process
  */
 export const MAIN_PROCESS_ID = -1;

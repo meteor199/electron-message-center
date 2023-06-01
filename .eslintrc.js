@@ -8,9 +8,7 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint', 'prettier'],
-  rules: {
-    // 自定义规则
-  },
+  rules: {},
   globals: {
     __TEST__: true,
   },

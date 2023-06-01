@@ -111,7 +111,7 @@ describe('listener test', () => {
   });
 
   describe('getAllListeners', () => {
-    it('当在主进程监听时，webContentId应该是主进程', async () => {
+    it('When listening in the main process, webContentId should be the main process', async () => {
       function first() {
         expect.fail('not off successfully');
       }
@@ -122,7 +122,7 @@ describe('listener test', () => {
       expect(listeners[0].webContentId).toBe(MAIN_PROCESS_ID);
     });
 
-    it('当在渲染进程监听时，webContentId应该是渲染进程webContentId', async () => {
+    it('When listening in the renderer process, webContentId should be the renderer process webContentId', async () => {
       function first() {
         expect.fail('not off successfully');
       }

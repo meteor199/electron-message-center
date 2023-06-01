@@ -17,7 +17,7 @@ describe('invoke test', () => {
   });
 
   describe('basic', () => {
-    it('invoke成功后， invokeCallbackList 长度应该为0', async () => {
+    it('After a successful invoke, the length of invokeCallbackList should be 0', async () => {
       function first(event: IpcEvent, num: number) {
         return num + 1;
       }
@@ -28,15 +28,15 @@ describe('invoke test', () => {
       expect(invokeCallbackList.length).toBe(0);
     });
 
-    it('当没有linstener时， 应返回错误', async () => {
+    it('when there is no listener, it should return an error', async () => {
       try {
         await messageCenterMain.invoke(route, 1);
-        expect.fail('没有监听者，应该报错');
+        expect.fail('There should be an error when there is no listener');
       } catch (err) {
         expect((err as Error).message).toBe('no listeners found');
       }
     });
-    it('当有多个linstener时， 应返回第一个', async () => {
+    it('when there are multiple listeners, it should return the first one', async () => {
       messageCenterRenderer.on(route, () => 1);
       await sleep(1);
       messageCenterRenderer.on(route, () => 2);
@@ -48,8 +48,8 @@ describe('invoke test', () => {
     });
   });
 
-  describe('主进程 invoke 渲染进程', () => {
-    it('假如有多个参数，参数应该都正确接收', async () => {
+  describe('main process invokes renderer process', () => {
+    it('if there are multiple arguments, they should be received correctly', async () => {
       function first(event: IpcEvent, ...args: unknown[]) {
         expect(route).toBe(route);
         expect(args[0]).to.equal(1);
@@ -63,7 +63,7 @@ describe('invoke test', () => {
       const ret = await messageCenterMain.invoke(route, 1, null, 'x', { a: 1 }, new Error('test'));
       expect(ret).toBe(2);
     });
-    it('event 应该被正确接收', async () => {
+    it('event should be received correctly', async () => {
       function first(event: IpcEvent) {
         expect(event.sourceId).toBe(MAIN_PROCESS_ID);
         return 2;
@@ -73,7 +73,7 @@ describe('invoke test', () => {
       const ret = await messageCenterMain.invoke(route);
       expect(ret).toBe(2);
     });
-    it('当返回普通类型时，应收到返回值', async () => {
+    it('when returning a normal type, the return value should be received', async () => {
       function first(event: IpcEvent, num: number) {
         return num + 1;
       }
@@ -83,7 +83,7 @@ describe('invoke test', () => {
       expect(ret).toBe(2);
     });
 
-    it('当返回Promise类型时，应收到返回值', async () => {
+    it('when returning a Promise type, the return value should be received', async () => {
       async function first(event: IpcEvent, num: number) {
         await sleep(1);
         return num + 2;
@@ -94,7 +94,7 @@ describe('invoke test', () => {
       expect(ret).toBe(3);
     });
 
-    it('当抛出异常时，应接收到错误', async () => {
+    it('when an exception is thrown, the error should be received', async () => {
       function first() {
         throw new Error('error test');
       }
@@ -102,12 +102,12 @@ describe('invoke test', () => {
       await sleep(1);
       try {
         await messageCenterMain.invoke(route, 1);
-        expect.fail('不应该正常返回');
+        expect.fail('should not return normally');
       } catch (err) {
         expect((err as Error).message).toBe('error test');
       }
     });
-    it('当是返回异步错误时(Promise.reject)，应接收到错误', async () => {
+    it('when returning an asynchronous error (Promise.reject), the error should be received', async () => {
       function first() {
         return Promise.reject(new Error('error promise test'));
       }
@@ -115,12 +115,12 @@ describe('invoke test', () => {
       await sleep(1);
       try {
         await messageCenterMain.invoke(route, 1);
-        expect.fail('不应该正常返回');
+        expect.fail('should not return normally');
       } catch (err) {
         expect((err as Error).message).toBe('error promise test');
       }
     });
-    it('当是监听者没有返回值时，应接收到undefined', async () => {
+    it('when the listener has no return value, undefined should be received', async () => {
       function first() {
         //
       }
@@ -131,8 +131,8 @@ describe('invoke test', () => {
     });
   });
 
-  describe('主进程 invoke 主进程', () => {
-    it('假如有多个参数，参数应该都正确接收', async () => {
+  describe('main process invokes main process', () => {
+    it('if there are multiple arguments, they should be received correctly', async () => {
       function first(event: IpcEvent, ...args: unknown[]) {
         expect(route).toBe(route);
         expect(args[0]).to.equal(1);
@@ -147,7 +147,7 @@ describe('invoke test', () => {
       expect(ret).toBe(2);
     });
 
-    it('event 应该被正确接收', async () => {
+    it('event should be received correctly', async () => {
       function first(event: IpcEvent) {
         expect(event.sourceId).toBe(MAIN_PROCESS_ID);
         return 2;
@@ -157,7 +157,7 @@ describe('invoke test', () => {
       const ret = await messageCenterMain.invoke(route);
       expect(ret).toBe(2);
     });
-    it('当返回普通类型时，应收到返回值', async () => {
+    it('when returning a normal type, the return value should be received', async () => {
       function first(event: IpcEvent, num: number) {
         return num + 1;
       }
@@ -167,7 +167,7 @@ describe('invoke test', () => {
       expect(ret).toBe(2);
     });
 
-    it('当返回Promise类型时，应收到返回值', async () => {
+    it('when returning a Promise type, the return value should be received', async () => {
       async function first(event: IpcEvent, num: number) {
         await sleep(1);
         return num + 2;
@@ -177,8 +177,7 @@ describe('invoke test', () => {
       const ret = await messageCenterMain.invoke(route, 1);
       expect(ret).toBe(3);
     });
-
-    it('当抛出异常时，应接收到错误', async () => {
+    it('when an exception is thrown, the error should be received', async () => {
       function first() {
         throw new Error('error test');
       }
@@ -186,12 +185,12 @@ describe('invoke test', () => {
       await sleep(1);
       try {
         await messageCenterMain.invoke(route, 1);
-        expect.fail('不应该正常返回');
+        expect.fail('should not return normally');
       } catch (err) {
         expect((err as Error).message).toBe('error test');
       }
     });
-    it('当是返回异步错误时(Promise.reject)，应接收到错误', async () => {
+    it('when returning an asynchronous error (Promise.reject), the error should be received', async () => {
       function first() {
         return Promise.reject(new Error('error promise test'));
       }
@@ -199,13 +198,13 @@ describe('invoke test', () => {
       await sleep(1);
       try {
         await messageCenterMain.invoke(route, 1);
-        expect.fail('不应该正常返回');
+        expect.fail('should not return normally');
       } catch (err) {
         expect((err as Error).message).toBe('error promise test');
       }
     });
 
-    it('当是监听者没有返回值时，应接收到undefined', async () => {
+    it('when the listener has no return value, undefined should be received', async () => {
       function first() {
         //
       }
@@ -216,8 +215,8 @@ describe('invoke test', () => {
     });
   });
 
-  describe('渲染进程 invoke 主进程', () => {
-    it('假如有多个参数，参数应该都正确接收', async () => {
+  describe('renderer process invokes main process', () => {
+    it('if there are multiple arguments, they should be received correctly', async () => {
       function first(event: IpcEvent, ...args: unknown[]) {
         expect(route).toBe(route);
         expect(args[0]).to.equal(1);
@@ -232,7 +231,7 @@ describe('invoke test', () => {
       expect(ret).toBe(2);
     });
 
-    it('event 应该被正确接收', async () => {
+    it('event should be received correctly', async () => {
       function first(event: IpcEvent) {
         expect(event.sourceId).toBe((globalThis as any).webConents.id);
         return 2;
@@ -242,7 +241,7 @@ describe('invoke test', () => {
       const ret = await messageCenterRenderer.invoke(route);
       expect(ret).toBe(2);
     });
-    it('当返回普通类型时，应收到返回值', async () => {
+    it('when returning a normal type, the return value should be received', async () => {
       function first(event: IpcEvent, num: number) {
         return num + 1;
       }
@@ -252,7 +251,7 @@ describe('invoke test', () => {
       expect(ret).toBe(2);
     });
 
-    it('当返回Promise类型时，应收到返回值', async () => {
+    it('when returning a Promise type, the return value should be received', async () => {
       async function first(event: IpcEvent, num: number) {
         await sleep(1);
         return num + 2;
@@ -263,7 +262,7 @@ describe('invoke test', () => {
       expect(ret).toBe(3);
     });
 
-    it('当抛出异常时，应接收到错误', async () => {
+    it('when an exception is thrown, the error should be received', async () => {
       function first() {
         throw new Error('error test');
       }
@@ -271,12 +270,12 @@ describe('invoke test', () => {
       await sleep(1);
       try {
         await messageCenterRenderer.invoke(route, 1);
-        expect.fail('不应该正常返回');
+        expect.fail('should not return normally');
       } catch (err) {
         expect((err as Error).message).toBe('error test');
       }
     });
-    it('当是返回异步错误时(Promise.reject)，应接收到错误', async () => {
+    it('when returning an asynchronous error (Promise.reject), the error should be received', async () => {
       function first() {
         return Promise.reject(new Error('error promise test'));
       }
@@ -284,13 +283,13 @@ describe('invoke test', () => {
       await sleep(1);
       try {
         await messageCenterRenderer.invoke(route, 1);
-        expect.fail('不应该正常返回');
+        expect.fail('should not return normally');
       } catch (err) {
         expect((err as Error).message).toBe('error promise test');
       }
     });
 
-    it('当是监听者没有返回值时，应接收到undefined', async () => {
+    it('when the listener has no return value, undefined should be received', async () => {
       function first() {
         //
       }
@@ -300,8 +299,8 @@ describe('invoke test', () => {
       expect(ret).toBe(undefined);
     });
 
-    describe('渲染进程 invoke 渲染进程', () => {
-      it('假如有多个参数，参数应该都正确接收', async () => {
+    describe('renderer process invokes renderer process', () => {
+      it('if there are multiple arguments, they should be received correctly', async () => {
         function first(event: IpcEvent, ...args: unknown[]) {
           expect(route).toBe(route);
           expect(args[0]).to.equal(1);
@@ -316,7 +315,7 @@ describe('invoke test', () => {
         expect(ret).toBe(2);
       });
 
-      it('当返回普通类型时，应收到返回值', async () => {
+      it('when returning a normal type, the return value should be received', async () => {
         function first(event: IpcEvent, num: number) {
           return num + 1;
         }
@@ -326,7 +325,7 @@ describe('invoke test', () => {
         expect(ret).toBe(2);
       });
 
-      it('当返回Promise类型时，应收到返回值', async () => {
+      it('when returning a Promise type, the return value should be received', async () => {
         async function first(event: IpcEvent, num: number) {
           await sleep(1);
           return num + 2;
@@ -337,7 +336,7 @@ describe('invoke test', () => {
         expect(ret).toBe(3);
       });
 
-      it('当抛出异常时，应接收到错误', async () => {
+      it('when an exception is thrown, the error should be received', async () => {
         function first() {
           throw new Error('error test');
         }
@@ -345,12 +344,12 @@ describe('invoke test', () => {
         await sleep(1);
         try {
           await messageCenterRenderer.invoke(route, 1);
-          expect.fail('不应该正常返回');
+          expect.fail('should not return normally');
         } catch (err) {
           expect((err as Error).message).toBe('error test');
         }
       });
-      it('当是返回异步错误时(Promise.reject)，应接收到错误', async () => {
+      it('when returning an asynchronous error (Promise.reject), the error should be received', async () => {
         function first() {
           return Promise.reject(new Error('error promise test'));
         }
@@ -358,13 +357,13 @@ describe('invoke test', () => {
         await sleep(1);
         try {
           await messageCenterRenderer.invoke(route, 1);
-          expect.fail('不应该正常返回');
+          expect.fail('should not return normally');
         } catch (err) {
           expect((err as Error).message).toBe('error promise test');
         }
       });
 
-      it('当是监听者没有返回值时，应接收到undefined', async () => {
+      it('when the listener has no return value, undefined should be received', async () => {
         function first() {
           //
         }
