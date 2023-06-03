@@ -1,7 +1,7 @@
-import { messageCenter as messageCenterRenderer } from '../src/renderer';
-import { clearEnv, generateRoute, sleep } from './utils';
+import { messageCenter as messageCenterRenderer, MessageCenter as MessageCenterRenderer } from '../src/renderer';
+import { clearEnv, generateRoute, getWebContents, sleep } from './utils';
 import '../src/main';
-import { messageCenter as messageCenterMain } from '../src/main';
+import { messageCenter as messageCenterMain, MessageCenter as MessageCenterMain } from '../src/main';
 import { invokeCallbackList } from '../src/main/mainProcess';
 import { IpcEvent, MAIN_PROCESS_ID } from '../src/shared';
 
@@ -128,6 +128,28 @@ describe('invoke test', () => {
       await sleep(1);
       const ret = await messageCenterMain.invoke(route, 1);
       expect(ret).toBe(undefined);
+    });
+
+    it('invoke with specified WebContents should be successful', async () => {
+      messageCenterRenderer.on(route, () => 1);
+      await sleep(1);
+      messageCenterMain.on(route, () => 2);
+
+      const specifiedInvoke = new MessageCenterMain({ webContentsId: MAIN_PROCESS_ID });
+
+      const ret = await specifiedInvoke.invoke(route, 1);
+      expect(ret).toBe(2);
+    });
+
+    it('invoke with multiple WebContents should be successful', async () => {
+      messageCenterRenderer.on(route, () => 1);
+      await sleep(1);
+      messageCenterMain.on(route, () => 2);
+
+      const specifiedInvoke = new MessageCenterMain({ webContentsId: [MAIN_PROCESS_ID, getWebContents().id] });
+
+      const ret = await specifiedInvoke.invoke(route, 1);
+      expect(ret).toBe(1);
     });
   });
 
@@ -371,6 +393,28 @@ describe('invoke test', () => {
         await sleep(1);
         const ret = await messageCenterRenderer.invoke(route, 1);
         expect(ret).toBe(undefined);
+      });
+
+      it('invoke with specified WebContents should be successful', async () => {
+        messageCenterRenderer.on(route, () => 1);
+        await sleep(1);
+        messageCenterMain.on(route, () => 2);
+
+        const specifiedInvoke = new MessageCenterRenderer({ webContentsId: MAIN_PROCESS_ID });
+
+        const ret = await specifiedInvoke.invoke(route, 1);
+        expect(ret).toBe(2);
+      });
+
+      it('invoke with multiple WebContents should be successful', async () => {
+        messageCenterRenderer.on(route, () => 1);
+        await sleep(1);
+        messageCenterMain.on(route, () => 2);
+
+        const specifiedInvoke = new MessageCenterRenderer({ webContentsId: [MAIN_PROCESS_ID, getWebContents().id] });
+
+        const ret = await specifiedInvoke.invoke(route, 1);
+        expect(ret).toBe(1);
       });
     });
   });

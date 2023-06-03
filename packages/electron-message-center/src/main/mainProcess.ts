@@ -8,6 +8,7 @@ import {
   ReplayInfo,
   IpcEvent,
   MAIN_PROCESS_ID,
+  Options,
 } from '../shared';
 import { generateInvokeId } from './utils';
 
@@ -31,6 +32,8 @@ interface ListenerItem {
    * main process listener
    */
   mainListener?: Listener;
+
+  webContentsId: number;
 }
 /**
  * List of listeners
@@ -73,13 +76,25 @@ export function disposeBroadcast(info: { route: string; sourceId: number }, ...a
   });
 }
 
+function findListeners(info: { route: string; opts?: Options }) {
+  const ids = info?.opts?.webContentsId;
+
+  if (ids) {
+    if (typeof ids === 'number') {
+      return listenerList.find(item => item.route === info.route && item.webContentsId === ids);
+    }
+    return listenerList.find(item => item.route === info.route && ids.includes(item.webContentsId));
+  }
+  return listenerList.find(item => item.route === info.route);
+}
+
 /**
  * dispose broadcast
  * @param info message info
  * @param args arguments
  */
-export function disposeInvoke(info: { route: string; sourceId: number }, ...args: unknown[]) {
-  const item = listenerList.find(item => item.route === info.route);
+export function disposeInvoke(info: { route: string; sourceId: number; opts?: Options }, ...args: unknown[]) {
+  const item = findListeners(info);
 
   const event: IpcEvent = {
     sourceId: info.sourceId,
@@ -134,6 +149,7 @@ export function addListenerInMain(info: { route: string; listenerId: number }, l
     type: 'main',
     listenerId: info.listenerId,
     mainListener: listener,
+    webContentsId: MAIN_PROCESS_ID,
   });
 }
 
@@ -171,7 +187,7 @@ export function getAllListeners(route?: string): ListenerInfo[] {
       item =>
         ({
           route: item.route,
-          webContentId: item.type === 'main' ? MAIN_PROCESS_ID : item.rendererWebContents?.id,
+          webContentId: item.webContentsId,
         } as ListenerInfo)
     );
 }
@@ -179,14 +195,18 @@ export function getAllListeners(route?: string): ListenerInfo[] {
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route: string }, ...args: unknown[]) => {
   disposeBroadcast({ route: info.route, sourceId: event.sender.id }, ...args);
 });
-ipcMain.handle(MessageChannelEnum.RENDERER_TO_MAIN_INVOKE, (event, info: { route: string }, ...args: unknown[]) => {
-  return disposeInvoke({ route: info.route, sourceId: event.sender.id }, ...args);
-});
+ipcMain.handle(
+  MessageChannelEnum.RENDERER_TO_MAIN_INVOKE,
+  (event, info: { route: string; opts?: Options }, ...args: unknown[]) => {
+    return disposeInvoke({ route: info.route, sourceId: event.sender.id, opts: info.opts }, ...args);
+  }
+);
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string; id: number }) => {
   const data: ListenerItem = {
     route: info.route,
     listenerId: info.id,
     rendererWebContents: event.sender,
+    webContentsId: event.sender.id,
     type: 'renderer',
   };
   listenerList.push(data);

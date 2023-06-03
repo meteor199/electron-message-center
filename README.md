@@ -118,6 +118,29 @@ function send() {
 
 ## Advanced usage
 
+
+#### Invoke with specified WebContents
+
+By default, `invoke` sends the message to the first listener it finds. If you want to specify a particular renderer process to receive the message, you can pass the webContents ID like so:
+
+```js
+
+
+// invoke in renderer process
+import { MessageCenter } from 'electron-message-center';
+
+const messageCenter = new MessageCenter({ webContentsId: 1 });
+const ret = await messageCenter.invoke('writeSettingsFile', '{ "name": "Jeff" }');
+console.log(ret); // true
+
+// listen in renderer process
+import { messageCenter } from 'electron-message-center';
+messageCenter.on('writeSettingsFile', (event, newSettings) => {
+  console.log(newSettings);
+  return Promise.resolve(true);
+});
+```
+
 #### Removing Listeners
 
 You can remove a listener with the `off()` method.

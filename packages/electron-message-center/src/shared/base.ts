@@ -1,7 +1,7 @@
-import { Listener, ListenerInfo } from './types';
+import { Listener, ListenerInfo, Options } from './types';
 
 export abstract class MessageCenterBase {
-  public constructor(opts: { maxTimeoutMs?: number } | undefined) {
+  public constructor(protected opts?: Options) {
     //
   }
 
