@@ -43,7 +43,7 @@ export class MessageCenter extends MessageCenterBase {
     return ipcRenderer.invoke(MessageChannelEnum.RENDERER_TO_MAIN_INVOKE, { route, opts: this.opts }, ...dataArgs);
   }
   public broadcast(route: string, ...dataArgs: unknown[]): void {
-    ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, { route }, ...dataArgs);
+    ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, { route, opts: this.opts }, ...dataArgs);
   }
 
   public on(route: string, listener: Listener): void {

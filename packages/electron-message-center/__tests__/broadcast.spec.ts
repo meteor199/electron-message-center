@@ -1,8 +1,8 @@
-import { messageCenter as messageCenterRenderer } from '../src/renderer';
-import { clearEnv, generateRoute } from './utils';
+import { messageCenter as messageCenterRenderer, MessageCenter as MessageCenterRenderer } from '../src/renderer';
+import { clearEnv, generateRoute, getWebContents, sleep } from './utils';
 import '../src/main';
-import { messageCenter as messageCenterMain } from '../src/main';
-import { IpcEvent } from '../src/shared';
+import { messageCenter as messageCenterMain, MessageCenter as MessageCenterMain } from '../src/main';
+import { IpcEvent, MAIN_PROCESS_ID } from '../src/shared';
 describe('broadcast', () => {
   describe('broadcast in main process', () => {
     let route: string;
@@ -109,6 +109,40 @@ describe('broadcast', () => {
           resolve();
         });
       }));
+
+    it('broadcast with specified WebContents should be successful', async () => {
+      return new Promise<void>((resolve, reject) => {
+        messageCenterRenderer.on(route, () => {
+          expect.fail('should not be called');
+        });
+        messageCenterMain.on(route, (event: IpcEvent, args: string) => {
+          resolve();
+        });
+
+        const specified = new MessageCenterMain({ webContentsId: MAIN_PROCESS_ID });
+        specified.broadcast(route, 1);
+      });
+    });
+
+    it('broadcast with multiple WebContents should be successful', async () => {
+      return new Promise<void>((resolve, reject) => {
+        Promise.all([
+          new Promise<void>((resolve, reject) => {
+            messageCenterMain.on(route, (event: IpcEvent, args: string) => {
+              resolve();
+            });
+          }),
+          new Promise<void>((resolve, reject) => {
+            messageCenterMain.on(route, (event: IpcEvent, args: string) => {
+              resolve();
+            });
+          }),
+        ]).then(() => resolve());
+
+        const specified = new MessageCenterMain({ webContentsId: [MAIN_PROCESS_ID, getWebContents().id] });
+        specified.broadcast(route, 1);
+      });
+    });
   });
 
   describe('broadcast in renderer', () => {
@@ -198,5 +232,19 @@ describe('broadcast', () => {
           resolve();
         });
       }));
+
+    it('broadcast with specified WebContents should be successful', async () => {
+      return new Promise<void>((resolve, reject) => {
+        messageCenterRenderer.on(route, () => {
+          expect.fail('should not be called');
+        });
+        messageCenterMain.on(route, (event: IpcEvent, args: string) => {
+          resolve();
+        });
+
+        const specified = new MessageCenterRenderer({ webContentsId: MAIN_PROCESS_ID });
+        specified.broadcast(route, 1);
+      });
+    });
   });
 });

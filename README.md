@@ -131,6 +131,10 @@ import { MessageCenter } from 'electron-message-center';
 
 const messageCenter = new MessageCenter({ webContentsId: 1 });
 const ret = await messageCenter.invoke('writeSettingsFile', '{ "name": "Jeff" }');
+
+// or broadcast
+messageCenter.broadcast('writeSettingsFile', '{ "name": "Jeff" }');
+
 console.log(ret); // true
 
 // listen in renderer process

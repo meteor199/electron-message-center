@@ -16,7 +16,7 @@ export class MessageCenter extends MessageCenterBase {
   }
 
   public broadcast(route: string, ...dataArgs: unknown[]): void {
-    disposeBroadcast({ route, sourceId: MAIN_PROCESS_ID }, ...dataArgs);
+    disposeBroadcast({ route, sourceId: MAIN_PROCESS_ID, opts: this.opts }, ...dataArgs);
   }
   public invoke(route: string, ...dataArgs: unknown[]) {
     return disposeInvoke({ route, sourceId: MAIN_PROCESS_ID, opts: this.opts }, ...dataArgs);

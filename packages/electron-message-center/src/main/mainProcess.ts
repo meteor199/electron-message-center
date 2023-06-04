@@ -55,8 +55,8 @@ export const webContentsMap = new WeakMap<
  * @param info message info
  * @param args arguments
  */
-export function disposeBroadcast(info: { route: string; sourceId: number }, ...args: unknown[]) {
-  const filteredListeners = listenerList.filter(item => item.route === info.route);
+export function disposeBroadcast(info: { route: string; sourceId: number; opts?: Options }, ...args: unknown[]) {
+  const filteredListeners = filterListeners(info);
 
   filteredListeners.forEach(item => {
     const callbackParams: InvokeRenderInfo = {
@@ -86,6 +86,18 @@ function findListeners(info: { route: string; opts?: Options }) {
     return listenerList.find(item => item.route === info.route && ids.includes(item.webContentsId));
   }
   return listenerList.find(item => item.route === info.route);
+}
+
+function filterListeners(info: { route: string; opts?: Options }) {
+  const ids = info?.opts?.webContentsId;
+
+  if (ids) {
+    if (typeof ids === 'number') {
+      return listenerList.filter(item => item.route === info.route && item.webContentsId === ids);
+    }
+    return listenerList.filter(item => item.route === info.route && ids.includes(item.webContentsId));
+  }
+  return listenerList.filter(item => item.route === info.route);
 }
 
 /**
@@ -192,9 +204,12 @@ export function getAllListeners(route?: string): ListenerInfo[] {
     );
 }
 
-ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST, (event, info: { route: string }, ...args: unknown[]) => {
-  disposeBroadcast({ route: info.route, sourceId: event.sender.id }, ...args);
-});
+ipcMain.on(
+  MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST,
+  (event, info: { route: string; opts?: Options }, ...args: unknown[]) => {
+    disposeBroadcast({ route: info.route, sourceId: event.sender.id, opts: info.opts }, ...args);
+  }
+);
 ipcMain.handle(
   MessageChannelEnum.RENDERER_TO_MAIN_INVOKE,
   (event, info: { route: string; opts?: Options }, ...args: unknown[]) => {
