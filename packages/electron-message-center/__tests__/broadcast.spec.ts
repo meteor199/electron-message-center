@@ -125,23 +125,22 @@ describe('broadcast', () => {
     });
 
     it('broadcast with multiple WebContents should be successful', async () => {
-      return new Promise<void>((resolve, reject) => {
-        Promise.all([
-          new Promise<void>((resolve, reject) => {
-            messageCenterMain.on(route, (event: IpcEvent, args: string) => {
-              resolve();
-            });
-          }),
-          new Promise<void>((resolve, reject) => {
-            messageCenterMain.on(route, (event: IpcEvent, args: string) => {
-              resolve();
-            });
-          }),
-        ]).then(() => resolve());
-
-        const specified = new MessageCenterMain({ webContentsId: [MAIN_PROCESS_ID, getWebContents().id] });
-        specified.broadcast(route, 1);
-      });
+      const ret = Promise.all([
+        new Promise<void>(resolve => {
+          messageCenterMain.on(route, () => {
+            resolve();
+          });
+        }),
+        new Promise<void>(resolve => {
+          messageCenterRenderer.on(route, () => {
+            resolve();
+          });
+        }),
+      ]);
+      await sleep(1);
+      const specified = new MessageCenterMain({ webContentsId: [MAIN_PROCESS_ID, getWebContents().id] });
+      specified.broadcast(route, 1);
+      await ret;
     });
   });
 

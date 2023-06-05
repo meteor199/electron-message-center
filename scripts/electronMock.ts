@@ -39,6 +39,7 @@ function mockWebContents() {
     };
 
     globalThis.webConents = event.sender;
+    globalThis.webConents.id = 1;
   });
   ipcRenderer.send('mock');
 }
