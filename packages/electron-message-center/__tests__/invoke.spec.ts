@@ -151,6 +151,23 @@ describe('invoke test', () => {
       const ret = await specifiedInvoke.invoke(route, 1);
       expect(ret).toBe(1);
     });
+
+    it('timeout should return error', async () => {
+      async function first() {
+        //
+        await sleep(100);
+        return 1;
+      }
+      messageCenterMain.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterMain({ timeout: 10 });
+      try {
+        await specified.invoke(route, 1);
+        expect.fail('fail');
+      } catch (e) {
+        expect((e as Error).message).toBe('timeout');
+      }
+    });
   });
 
   describe('main process invokes main process', () => {

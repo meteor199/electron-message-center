@@ -10,7 +10,7 @@ import {
   MAIN_PROCESS_ID,
   Options,
 } from '../shared';
-import { generateInvokeId } from './utils';
+import { generateInvokeId, withTimeout } from './utils';
 
 interface ListenerItem {
   type: 'renderer' | 'main';
@@ -131,7 +131,10 @@ export function disposeInvoke(info: { route: string; sourceId: number; opts?: Op
       });
     } else {
       // invoke main listener
-      return Promise.resolve().then(() => item.mainListener!(event, ...args));
+      return withTimeout(
+        Promise.resolve().then(() => item.mainListener!(event, ...args)),
+        info.opts?.timeout || 0
+      );
     }
   }
   return Promise.reject(new Error('no listeners found'));

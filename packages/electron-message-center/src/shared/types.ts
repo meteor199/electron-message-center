@@ -28,7 +28,7 @@ export interface ListenerInfo {
  */
 export type Listener = { (event: IpcEvent, ...args: any[]): void | any | Promise<any> };
 export type Options = {
-  maxTimeoutMs?: number;
+  timeout?: number;
   /**
    * The webContentsId specifies the ID of the webContents. If you want to specify the main process instead, set webContentsId to -1.
    */
