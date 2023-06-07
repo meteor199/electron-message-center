@@ -152,13 +152,13 @@ describe('invoke test', () => {
       expect(ret).toBe(1);
     });
 
-    it('timeout should return error', async () => {
+    it('should return error when timeout', async () => {
       async function first() {
         //
         await sleep(100);
         return 1;
       }
-      messageCenterMain.on(route, first);
+      messageCenterRenderer.on(route, first);
       await sleep(1);
       const specified = new MessageCenterMain({ timeout: 10 });
       try {
@@ -167,6 +167,17 @@ describe('invoke test', () => {
       } catch (e) {
         expect((e as Error).message).toBe('timeout');
       }
+    });
+    it('should return success when not timeout', async () => {
+      async function first() {
+        await sleep(10);
+        return 1;
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterMain({ timeout: 20 });
+      const ret = await specified.invoke(route, 1);
+      expect(ret).toBe(1);
     });
   });
 
@@ -251,6 +262,36 @@ describe('invoke test', () => {
       await sleep(1);
       const ret = await messageCenterMain.invoke(route, 1);
       expect(ret).toBe(undefined);
+    });
+
+    it('should return error when timeout', async () => {
+      async function first() {
+        //
+        await sleep(100);
+        return 1;
+      }
+      messageCenterMain.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterMain({ timeout: 10 });
+      try {
+        await specified.invoke(route, 1);
+        expect.fail('fail');
+      } catch (e) {
+        expect((e as Error).message).toBe('timeout');
+      }
+    });
+    it('should return success when not timeout', async () => {
+      async function first() {
+        //
+        await sleep(10);
+        return 1;
+      }
+      messageCenterMain.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterMain({ timeout: 20 });
+
+      const ret = await specified.invoke(route, 1);
+      expect(ret).toBe(1);
     });
   });
 
@@ -338,101 +379,163 @@ describe('invoke test', () => {
       expect(ret).toBe(undefined);
     });
 
-    describe('renderer process invokes renderer process', () => {
-      it('if there are multiple arguments, they should be received correctly', async () => {
-        function first(event: IpcEvent, ...args: unknown[]) {
-          expect(route).toBe(route);
-          expect(args[0]).to.equal(1);
-          expect(args[1]).to.equal(null);
-          expect(args[2]).to.equal('x');
-          expect(args[3]).toMatchObject({ a: 1 });
-          return 2;
-        }
-        messageCenterRenderer.on(route, first);
-        await sleep(1);
-        const ret = await messageCenterRenderer.invoke(route, 1, null, 'x', { a: 1 }, new Error('test'));
-        expect(ret).toBe(2);
-      });
-
-      it('when returning a normal type, the return value should be received', async () => {
-        function first(event: IpcEvent, num: number) {
-          return num + 1;
-        }
-        messageCenterRenderer.on(route, first);
-        await sleep(1);
-        const ret = await messageCenterRenderer.invoke(route, 1);
-        expect(ret).toBe(2);
-      });
-
-      it('when returning a Promise type, the return value should be received', async () => {
-        async function first(event: IpcEvent, num: number) {
-          await sleep(1);
-          return num + 2;
-        }
-        messageCenterRenderer.on(route, first);
-        await sleep(1);
-        const ret = await messageCenterRenderer.invoke(route, 1);
-        expect(ret).toBe(3);
-      });
-
-      it('when an exception is thrown, the error should be received', async () => {
-        function first() {
-          throw new Error('error test');
-        }
-        messageCenterRenderer.on(route, first);
-        await sleep(1);
-        try {
-          await messageCenterRenderer.invoke(route, 1);
-          expect.fail('should not return normally');
-        } catch (err) {
-          expect((err as Error).message).toBe('error test');
-        }
-      });
-      it('when returning an asynchronous error (Promise.reject), the error should be received', async () => {
-        function first() {
-          return Promise.reject(new Error('error promise test'));
-        }
-        messageCenterRenderer.on(route, first);
-        await sleep(1);
-        try {
-          await messageCenterRenderer.invoke(route, 1);
-          expect.fail('should not return normally');
-        } catch (err) {
-          expect((err as Error).message).toBe('error promise test');
-        }
-      });
-
-      it('when the listener has no return value, undefined should be received', async () => {
-        function first() {
-          //
-        }
-        messageCenterRenderer.on(route, first);
-        await sleep(1);
-        const ret = await messageCenterRenderer.invoke(route, 1);
-        expect(ret).toBe(undefined);
-      });
-
-      it('invoke with specified WebContents should be successful', async () => {
-        messageCenterRenderer.on(route, () => 1);
-        await sleep(1);
-        messageCenterMain.on(route, () => 2);
-
-        const specifiedInvoke = new MessageCenterRenderer({ webContentsId: MAIN_PROCESS_ID });
-
-        const ret = await specifiedInvoke.invoke(route, 1);
-        expect(ret).toBe(2);
-      });
-
-      it('invoke with multiple WebContents should be successful', async () => {
-        messageCenterRenderer.on(route, () => 1);
-        await sleep(1);
-        messageCenterMain.on(route, () => 2);
-
-        const specifiedInvoke = new MessageCenterRenderer({ webContentsId: [MAIN_PROCESS_ID, getWebContents().id] });
-
-        const ret = await specifiedInvoke.invoke(route, 1);
-        expect(ret).toBe(1);
-      });
+    it('should return error when timeout', async () => {
+      async function first() {
+        //
+        await sleep(100);
+        return 1;
+      }
+      messageCenterMain.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterRenderer({ timeout: 10 });
+      try {
+        await specified.invoke(route, 1);
+        expect.fail('fail');
+      } catch (e) {
+        expect((e as Error).message).toBe('timeout');
+      }
     });
+    it('should return success when not timeout', async () => {
+      async function first() {
+        //
+        await sleep(10);
+        return 1;
+      }
+      messageCenterMain.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterRenderer({ timeout: 20 });
+
+      const ret = await specified.invoke(route, 1);
+      expect(ret).toBe(1);
+    });
+  });
+
+  describe('renderer process invokes renderer process', () => {
+    it('if there are multiple arguments, they should be received correctly', async () => {
+      function first(event: IpcEvent, ...args: unknown[]) {
+        expect(route).toBe(route);
+        expect(args[0]).to.equal(1);
+        expect(args[1]).to.equal(null);
+        expect(args[2]).to.equal('x');
+        expect(args[3]).toMatchObject({ a: 1 });
+        return 2;
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const ret = await messageCenterRenderer.invoke(route, 1, null, 'x', { a: 1 }, new Error('test'));
+      expect(ret).toBe(2);
+    });
+
+    it('when returning a normal type, the return value should be received', async () => {
+      function first(event: IpcEvent, num: number) {
+        return num + 1;
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const ret = await messageCenterRenderer.invoke(route, 1);
+      expect(ret).toBe(2);
+    });
+
+    it('when returning a Promise type, the return value should be received', async () => {
+      async function first(event: IpcEvent, num: number) {
+        await sleep(1);
+        return num + 2;
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const ret = await messageCenterRenderer.invoke(route, 1);
+      expect(ret).toBe(3);
+    });
+
+    it('when an exception is thrown, the error should be received', async () => {
+      function first() {
+        throw new Error('error test');
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      try {
+        await messageCenterRenderer.invoke(route, 1);
+        expect.fail('should not return normally');
+      } catch (err) {
+        expect((err as Error).message).toBe('error test');
+      }
+    });
+    it('when returning an asynchronous error (Promise.reject), the error should be received', async () => {
+      function first() {
+        return Promise.reject(new Error('error promise test'));
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      try {
+        await messageCenterRenderer.invoke(route, 1);
+        expect.fail('should not return normally');
+      } catch (err) {
+        expect((err as Error).message).toBe('error promise test');
+      }
+    });
+
+    it('when the listener has no return value, undefined should be received', async () => {
+      function first() {
+        //
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const ret = await messageCenterRenderer.invoke(route, 1);
+      expect(ret).toBe(undefined);
+    });
+
+    it('invoke with specified WebContents should be successful', async () => {
+      messageCenterRenderer.on(route, () => 1);
+      await sleep(1);
+      messageCenterMain.on(route, () => 2);
+
+      const specifiedInvoke = new MessageCenterRenderer({ webContentsId: MAIN_PROCESS_ID });
+
+      const ret = await specifiedInvoke.invoke(route, 1);
+      expect(ret).toBe(2);
+    });
+
+    it('invoke with multiple WebContents should be successful', async () => {
+      messageCenterRenderer.on(route, () => 1);
+      await sleep(1);
+      messageCenterMain.on(route, () => 2);
+
+      const specifiedInvoke = new MessageCenterRenderer({ webContentsId: [MAIN_PROCESS_ID, getWebContents().id] });
+
+      const ret = await specifiedInvoke.invoke(route, 1);
+      expect(ret).toBe(1);
+    });
+
+    it('should return error when timeout', async () => {
+      async function first() {
+        //
+        await sleep(100);
+        return 1;
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterRenderer({ timeout: 10 });
+
+      try {
+        await specified.invoke(route, 1);
+      } catch (e) {
+        expect((e as Error).message).toBe('timeout');
+        return;
+      }
+      expect.fail('fail');
+    });
+    // it('should return success when not timeout', async () => {
+    //   async function first() {
+    //     //
+    //     await sleep(1);
+    //     return 1;
+    //   }
+    //   messageCenterRenderer.on(route, first);
+    //   await sleep(1);
+    //   const specified = new MessageCenterRenderer({ timeout: 1000 });
+
+    //   const ret = await specified.invoke(route, 1);
+    //   expect(ret).toBe(1);
+    // });
   });
 });

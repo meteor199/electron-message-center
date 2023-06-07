@@ -114,7 +114,7 @@ export function disposeInvoke(info: { route: string; sourceId: number; opts?: Op
 
   if (item) {
     if (item.type === 'renderer') {
-      return new Promise((resolve, reject) => {
+      const promise = new Promise((resolve, reject) => {
         const id = generateInvokeId();
         invokeCallbackList.push({
           webContent: item.rendererWebContents!,
@@ -129,6 +129,8 @@ export function disposeInvoke(info: { route: string; sourceId: number; opts?: Op
         };
         item.rendererWebContents!.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, event, callbackParams, ...args);
       });
+
+      return withTimeout(promise, info.opts?.timeout || 0);
     } else {
       // invoke main listener
       return withTimeout(
