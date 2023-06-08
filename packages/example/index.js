@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, BrowserView } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
 require('electron-message-center/main');
@@ -8,19 +8,11 @@ const { messageCenter } = require('electron-message-center/main');
 // for testing purposes
 global.messageCenter = messageCenter;
 
-let isE2E = false;
-try {
-  isE2E = __TEST__;
-} catch (e) {
-  //
-}
-
 require('electron-message-center/main');
 
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    show: !isE2E,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       sandbox: false,
@@ -32,7 +24,6 @@ function createWindow() {
   mainWindow.loadFile(path.join(__dirname, 'main.html'));
 
   const window1 = new BrowserWindow({
-    show: !isE2E,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       sandbox: false,
@@ -42,7 +33,6 @@ function createWindow() {
   window1.loadFile(path.join(__dirname, 'window1.html'));
 
   const window2 = new BrowserWindow({
-    show: !isE2E,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       sandbox: false,
