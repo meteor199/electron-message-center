@@ -118,14 +118,11 @@ function send() {
 
 ## Advanced usage
 
-
 #### Invoke with specified WebContents
 
 By default, `invoke` sends the message to the first listener it finds. If you want to specify a particular renderer process to receive the message, you can pass the webContents ID like so:
 
 ```js
-
-
 // invoke in renderer process
 import { MessageCenter } from 'electron-message-center';
 
@@ -142,6 +139,28 @@ import { messageCenter } from 'electron-message-center';
 messageCenter.on('writeSettingsFile', (event, newSettings) => {
   console.log(newSettings);
   return Promise.resolve(true);
+});
+```
+
+#### Timeouts
+
+By default, the `invoke` method will wait indefinitely for the other process to return data. If you want to set a timeout (after which the promise will be automatically rejected), you can create another instance of `MessageCenter` like so:
+
+```js
+// invoke in renderer process
+import { MessageCenter } from 'electron-message-center';
+
+const messageCenter = new MessageCenter({ timeout: 2000 });
+try {
+  await messageCenter.invoke('writeSettingsFile', '{ "name": "Jeff" }');
+} catch (e) {
+  console.error(e);
+}
+
+// listen in renderer process
+import { messageCenter } from 'electron-message-center';
+messageCenter.on('writeSettingsFile', (event, newSettings) => {
+  return someOperationThatNeverCompletesUhOh();
 });
 ```
 
