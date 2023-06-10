@@ -1,5 +1,5 @@
 import { WebContents, ipcMain, ipcRenderer } from 'electron';
-import { invokeCallbackList, listenerList, webContentsMap } from '../src/main/mainProcess';
+import { invokeCallbackMap, listenerList, webContentsMap } from '../src/main/mainProcess';
 
 export const generateRoute = (function generateRoute() {
   let i = 1;
@@ -20,5 +20,5 @@ export function clearEnv() {
   listenerList.splice(0, listenerList.length);
   webContentsMap.delete(getWebContents());
   getWebContents().removeAllListeners();
-  invokeCallbackList.splice(0, invokeCallbackList.length);
+  invokeCallbackMap.clear();
 }

@@ -1,4 +1,4 @@
-import { ipcMain, webContents, WebContents } from 'electron'; // eslint-disable-line
+import { ipcMain, WebContents } from 'electron'; // eslint-disable-line
 import {
   ListenerInfo,
   MessageChannelEnum,
@@ -9,11 +9,11 @@ import {
   IpcEvent,
   MAIN_PROCESS_ID,
   Options,
+  createId,
+  withTimeout,
 } from '../shared';
-import { generateInvokeId, withTimeout } from './utils';
 
 interface ListenerItem {
-  type: 'renderer' | 'main';
   /**
    * message channel
    */
@@ -67,9 +67,9 @@ export function disposeBroadcast(info: { route: string; sourceId: number; opts?:
     const event: IpcEvent = {
       sourceId: info.sourceId,
     };
-
-    if (item.type === 'renderer') {
-      item.rendererWebContents!.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, event, callbackParams, ...args);
+    // renderer process
+    if (item.rendererWebContents) {
+      item.rendererWebContents.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, event, callbackParams, ...args);
     } else {
       item.mainListener!(event, ...args);
     }
@@ -113,14 +113,14 @@ export function disposeInvoke(info: { route: string; sourceId: number; opts?: Op
   };
 
   if (item) {
-    if (item.type === 'renderer') {
+    // renderer process
+    if (item.rendererWebContents) {
       const promise = new Promise((resolve, reject) => {
-        const id = generateInvokeId();
-        invokeCallbackList.push({
+        const id = createId();
+        invokeCallbackMap.set(id, {
           webContent: item.rendererWebContents!,
           successCallback: resolve,
           errorCallback: reject,
-          invokeId: id,
         });
         const callbackParams: InvokeRenderInfo = {
           listenerId: item.listenerId,
@@ -142,16 +142,23 @@ export function disposeInvoke(info: { route: string; sourceId: number; opts?: Op
   return Promise.reject(new Error('no listeners found'));
 }
 
-export const invokeCallbackList: {
-  invokeId: number;
-  webContent: WebContents;
-  successCallback: (value: unknown) => void;
-  errorCallback: (err: Error) => void;
-}[] = [];
+/**
+ * invoke callback map
+ * key is invokeId
+ */
+export const invokeCallbackMap = new Map<
+  number,
+  {
+    webContent: WebContents;
+    successCallback: (value: unknown) => void;
+    errorCallback: (err: Error) => void;
+  }
+>();
 
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, (event, info: ReplayInfo) => {
-  const [item] = remove(invokeCallbackList, item => item.invokeId === info.invokeId);
+  const item = invokeCallbackMap.get(info.invokeId);
   if (item) {
+    invokeCallbackMap.delete(info.invokeId);
     if (info.isSuccess) {
       item.successCallback(info.data);
     } else {
@@ -163,7 +170,6 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, (event, info: ReplayInfo)
 export function addListenerInMain(info: { route: string; listenerId: number }, listener: Listener) {
   listenerList.push({
     route: info.route,
-    type: 'main',
     listenerId: info.listenerId,
     mainListener: listener,
     webContentsId: MAIN_PROCESS_ID,
@@ -227,7 +233,6 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string
     listenerId: info.id,
     rendererWebContents: event.sender,
     webContentsId: event.sender.id,
-    type: 'renderer',
   };
   listenerList.push(data);
   if (webContentsMap.has(event.sender)) {

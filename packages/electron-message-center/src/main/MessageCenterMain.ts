@@ -1,5 +1,5 @@
 import { ListenerInfo, MAIN_PROCESS_ID } from '../shared';
-import { Listener, MessageCenterBase, Options } from '../shared/';
+import { Listener, MessageCenterBase, Options, createId } from '../shared/';
 import {
   addListenerInMain,
   disposeBroadcast,
@@ -7,8 +7,6 @@ import {
   getAllListeners,
   removeListenerInMain,
 } from './mainProcess';
-
-let listenerId = 0;
 
 export class MessageCenter extends MessageCenterBase {
   public constructor(opts?: Options) {
@@ -22,7 +20,7 @@ export class MessageCenter extends MessageCenterBase {
     return disposeInvoke({ route, sourceId: MAIN_PROCESS_ID, opts: this.opts }, ...dataArgs);
   }
   public on(route: string, listener: Listener): void {
-    addListenerInMain({ route, listenerId: listenerId++ }, listener);
+    addListenerInMain({ route, listenerId: createId() }, listener);
   }
 
   public off(route: string, listener?: Listener): void {

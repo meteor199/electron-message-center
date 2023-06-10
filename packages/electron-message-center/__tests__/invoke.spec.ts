@@ -2,7 +2,7 @@ import { messageCenter as messageCenterRenderer, MessageCenter as MessageCenterR
 import { clearEnv, generateRoute, getWebContents, sleep } from './utils';
 import '../src/main';
 import { messageCenter as messageCenterMain, MessageCenter as MessageCenterMain } from '../src/main';
-import { invokeCallbackList } from '../src/main/mainProcess';
+import { invokeCallbackMap } from '../src/main/mainProcess';
 import { IpcEvent, MAIN_PROCESS_ID } from '../src/shared';
 
 describe('invoke test', () => {
@@ -17,7 +17,7 @@ describe('invoke test', () => {
   });
 
   describe('basic', () => {
-    it('After a successful invoke, the length of invokeCallbackList should be 0', async () => {
+    it('After a successful invoke, the length of invokeCallbackMap should be 0', async () => {
       function first(event: IpcEvent, num: number) {
         return num + 1;
       }
@@ -25,7 +25,7 @@ describe('invoke test', () => {
       await sleep(1);
       await messageCenterMain.invoke(route, 1);
 
-      expect(invokeCallbackList.length).toBe(0);
+      expect(invokeCallbackMap.size).toBe(0);
     });
 
     it('when there is no listener, it should return an error', async () => {
@@ -524,18 +524,18 @@ describe('invoke test', () => {
       }
       expect.fail('fail');
     });
-    // it('should return success when not timeout', async () => {
-    //   async function first() {
-    //     //
-    //     await sleep(1);
-    //     return 1;
-    //   }
-    //   messageCenterRenderer.on(route, first);
-    //   await sleep(1);
-    //   const specified = new MessageCenterRenderer({ timeout: 1000 });
+    it('should return success when not timeout', async () => {
+      async function first() {
+        //
+        await sleep(1);
+        return 1;
+      }
+      messageCenterRenderer.on(route, first);
+      await sleep(1);
+      const specified = new MessageCenterRenderer({ timeout: 1000 });
 
-    //   const ret = await specified.invoke(route, 1);
-    //   expect(ret).toBe(1);
-    // });
+      const ret = await specified.invoke(route, 1);
+      expect(ret).toBe(1);
+    });
   });
 });
