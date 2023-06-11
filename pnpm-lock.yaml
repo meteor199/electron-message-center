@@ -12,7 +12,7 @@ importers:
       '@vitest/ui': ^0.31.0
       conventional-changelog-cli: ^3.0.0
       cz-customizable: ^7.0.0
-      electron: 22.3.9
+      electron: ^22.3.9
       electron-mock-ipc: ^0.3.12
       eslint: ^8.40.0
       eslint-config-prettier: ^8.8.0
