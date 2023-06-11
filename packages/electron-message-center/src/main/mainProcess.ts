@@ -101,45 +101,42 @@ function filterListeners(info: { route: string; opts?: Options }) {
 }
 
 /**
- * dispose broadcast
+ * dispose invoke
  * @param info message info
  * @param args arguments
  */
 export function disposeInvoke(info: { route: string; sourceId: number; opts?: Options }, ...args: unknown[]) {
   const item = findListeners(info);
 
+  if (!item) {
+    return Promise.reject(new Error('no listeners found'));
+  }
+
   const event: IpcEvent = {
     sourceId: info.sourceId,
   };
-
-  if (item) {
-    // renderer process
-    if (item.rendererWebContents) {
-      const promise = new Promise((resolve, reject) => {
-        const id = createId();
-        invokeCallbackMap.set(id, {
-          webContent: item.rendererWebContents!,
-          successCallback: resolve,
-          errorCallback: reject,
-        });
-        const callbackParams: InvokeRenderInfo = {
-          listenerId: item.listenerId,
-          type: 'invoke',
-          invokeId: id,
-        };
-        item.rendererWebContents!.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, event, callbackParams, ...args);
+  // renderer process
+  if (item.rendererWebContents) {
+    const promise = new Promise((resolve, reject) => {
+      const id = createId();
+      invokeCallbackMap.set(id, {
+        webContent: item.rendererWebContents!,
+        successCallback: resolve,
+        errorCallback: reject,
       });
-
-      return withTimeout(promise, info.opts?.timeout || 0);
-    } else {
-      // invoke main listener
-      return withTimeout(
-        Promise.resolve().then(() => item.mainListener!(event, ...args)),
-        info.opts?.timeout || 0
-      );
-    }
+      const callbackParams: InvokeRenderInfo = {
+        listenerId: item.listenerId,
+        type: 'invoke',
+        invokeId: id,
+      };
+      item.rendererWebContents!.send(MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK, event, callbackParams, ...args);
+    });
+    return withTimeout(promise, info.opts?.timeout || 0);
+  } else {
+    // invoke main listener
+    const promise = Promise.resolve().then(() => item.mainListener!(event, ...args));
+    return withTimeout(promise, info.opts?.timeout || 0);
   }
-  return Promise.reject(new Error('no listeners found'));
 }
 
 /**

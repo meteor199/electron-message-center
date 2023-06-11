@@ -8,6 +8,7 @@
     "commit": "git add . && git-cz",
     "test-unit": "vitest -c vitest.unit.config.ts",
     "test-e2e": "vitest -c vitest.e2e.config.ts",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "test-ui": "vitest -c vitest.unit.config.ts --ui",
     "coverage": "vitest run  -c vitest.unit.config.ts --coverage"
   },
@@ -18,8 +19,9 @@
     "@typescript-eslint/parser": "^5.59.5",
     "@vitest/coverage-istanbul": "^0.31.0",
     "@vitest/ui": "^0.31.0",
+    "conventional-changelog-cli": "^3.0.0",
     "cz-customizable": "^7.0.0",
-    "electron": "22.3.9",
+    "electron": "^22.3.9",
     "electron-mock-ipc": "^0.3.12",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.8.0",
