@@ -9,7 +9,7 @@
 
 ## 安装
 
-首先，您需要从 NPM 安装它：
+首先，从 NPM 安装它：
 
 ```sh
 npm install --save electron-message-center
@@ -23,9 +23,9 @@ require('electron-message-center/main');
 
 ## 广播
 
-通过`route`向主进程或渲染进程中的所有侦听器发送消息。
+通过`route`向主进程或渲染进程中的所有监听器发送消息。
 
-侦听器应使用`messageCenter.on()`监听通道。
+监听器应使用`messageCenter.on()`监听通道。
 
 ```js
 // 在第一个渲染进程中监听
@@ -55,11 +55,11 @@ import { messageCenter } from 'electron-message-center/main';
 messageCenter.broadcast('writeSettingsFile', '{ "name": "Jeff" }');
 ```
 
-## 调用
+## invoke
 
 通过`route`向主进程或渲染进程发送消息，并异步地期望结果。
 
-侦听器应使用`messageCenter.on()`监听通道。
+监听器应使用`messageCenter.on()`监听通道。
 
 ```js
 // 在渲染进程中监听
@@ -116,21 +116,69 @@ function send() {
 
 ## 高级用法
 
-#### 删除侦听器
+#### 调用指定 WebContents 
 
-您可以使用`off()`方法删除侦听器。
+默认情况下，`invoke` 方法会将消息发送到它找到的第一个监听器。如果您想指定一个特定的进程来接收消息，可以设置`webContents` ID：
+
+```js
+// 在渲染进程中调用
+import { MessageCenter } from 'electron-message-center';
+
+const messageCenter = new MessageCenter({ webContentsId: 1 });
+const ret = await messageCenter.invoke('writeSettingsFile', '{ "name": "Jeff" }');
+
+// 或者广播
+messageCenter.broadcast('writeSettingsFile', '{ "name": "Jeff" }');
+
+console.log(ret); // true
+
+// 在渲染进程中监听
+import { messageCenter } from 'electron-message-center';
+messageCenter.on('writeSettingsFile', (event, newSettings) => {
+  console.log(newSettings);
+  return Promise.resolve(true);
+});
+```
+
+#### 超时
+
+默认情况下，`invoke` 方法将无限期等待其他进程返回数据。如果您想设置超时（超时后，Promise 将自动拒绝），可以创建另一个 `MessageCenter` 实例：
+
+```js
+// 在渲染进程中调用
+import { MessageCenter } from 'electron-message-center';
+
+const messageCenter = new MessageCenter({ timeout: 2000 });
+try {
+  await messageCenter.invoke('writeSettingsFile', '{ "name": "Jeff" }');
+} catch (e) {
+  console.error(e);
+}
+
+// 在渲染进程中监听
+import { messageCenter } from 'electron-message-center';
+messageCenter.on('writeSettingsFile', (event, newSettings) => {
+  return someOperationThatNeverCompletesUhOh();
+});
+```
+
+#### 删除监听器
+
+您可以使用 `off()` 方法删除监听器。
 
 ```js
 // 在渲染进程中
 import { messageCenter } from 'electron-message-center';
 
-messageCenter.off('someRoute'); // 不再关心
+messageCenter.off('someRoute'); // 不再监听
 
 // 在主进程中
 import { messageCenter } from 'electron-message-center/main';
 
-messageCenter.off('someRoute'); // 不再关心
+messageCenter.off('someRoute'); // 不再监听
 ```
+
+
 
 ## 示例
 
