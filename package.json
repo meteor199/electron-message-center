@@ -6,6 +6,8 @@
     "lint": "eslint . --ext=.ts,.js",
     "prepare": "husky install",
     "commit": "git add . && git-cz",
+    "build": "cd packages/electron-message-center && npm run build",
+    "dev": "npm run build && cd packages/example && npm run dev",
     "test-unit": "vitest -c vitest.unit.config.ts",
     "test-e2e": "vitest -c vitest.e2e.config.ts",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",

@@ -1,36 +1,7 @@
 import { ipcRenderer } from 'electron';
-import { IpcEvent, Listener, MessageCenterBase, Options, ReplayInfo, createId } from '../shared/';
-import { ListenerInfo, MessageChannelEnum, InvokeRenderInfo } from '../shared';
-
-let listenerList: { id: number; route: string; listener: Listener }[] = [];
-
-ipcRenderer.on(
-  MessageChannelEnum.MAIN_TO_RENDERER_CALLBACK,
-  async (e, event: IpcEvent, info: InvokeRenderInfo, ...args: unknown[]) => {
-    const item = listenerList.find(r => r.id === info.listenerId);
-
-    if (!item) return;
-
-    if (info.type === 'invoke') {
-      try {
-        const data = await item.listener(event, ...args);
-        ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
-          invokeId: info.invokeId,
-          data: data,
-          isSuccess: true,
-        } as ReplayInfo);
-      } catch (e) {
-        ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, {
-          invokeId: info.invokeId,
-          data: e,
-          isSuccess: false,
-        } as ReplayInfo);
-      }
-    } else {
-      item.listener(event, ...args);
-    }
-  }
-);
+import { Listener, MessageCenterBase, Options, createId, remove } from '../shared/';
+import { ListenerInfo, MessageChannelEnum } from '../shared';
+import { listenerList } from './listenerManage';
 
 export class MessageCenter extends MessageCenterBase {
   public constructor(opts?: Options) {
@@ -50,18 +21,12 @@ export class MessageCenter extends MessageCenterBase {
   }
 
   public off(route: string, listener?: Listener): void {
-    const ids: number[] = [];
     if (listener) {
-      listenerList = listenerList.filter(item => {
-        if (item.route === route && listener === item.listener) {
-          ids.push(item.id);
-          return false;
-        }
-        return true;
-      });
+      const removed = remove(listenerList, item => item.route === route && listener === item.listener);
+      const ids = removed.map(item => item.id);
       ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { ids, route });
     } else {
-      listenerList = listenerList.filter(item => item.route !== route);
+      remove(listenerList, item => item.route === route);
       ipcRenderer.send(MessageChannelEnum.RENDERER_TO_MAIN_OFF, { route });
     }
   }
