@@ -1,6 +1,6 @@
 import { ipcMain, ipcRenderer } from 'electron';
 import { generateRoute } from './utils';
-import { remove } from '../src/shared';
+import { remove } from '../../src/shared';
 
 describe('basic', () => {
   beforeEach(() => {

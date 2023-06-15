@@ -1,8 +1,8 @@
-import { messageCenter as messageCenterRenderer, MessageCenter as MessageCenterRenderer } from '../src/renderer';
+import { messageCenter as messageCenterRenderer, MessageCenter as MessageCenterRenderer } from '../../src/renderer';
 import { clearEnv, generateRoute, getWebContents, sleep } from './utils';
-import '../src/main';
-import { messageCenter as messageCenterMain, MessageCenter as MessageCenterMain } from '../src/main';
-import { IpcEvent, MAIN_PROCESS_ID } from '../src/shared';
+import '../../src/main';
+import { messageCenter as messageCenterMain, MessageCenter as MessageCenterMain } from '../../src/main';
+import { IpcEvent, MAIN_PROCESS_ID } from '../../src/shared';
 describe('broadcast', () => {
   describe('broadcast in main process', () => {
     let route: string;

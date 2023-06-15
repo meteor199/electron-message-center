@@ -1,4 +1,4 @@
-import { MessageCenter } from '../../main';
+import type { MessageCenter } from '../../main';
 import { setupElectron, sleep } from './e2eUtils';
 
 declare let global: { messageCenter: MessageCenter };

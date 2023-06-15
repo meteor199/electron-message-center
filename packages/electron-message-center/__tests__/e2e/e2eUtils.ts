@@ -1,5 +1,5 @@
 import { ElectronApplication, _electron as electron } from 'playwright';
-import { MessageCenter } from '../../main';
+import type { MessageCenter } from '../../main';
 
 declare global {
   interface Window {

@@ -1,9 +1,9 @@
-import { messageCenter as messageCenterRenderer } from '../src/renderer';
+import { messageCenter as messageCenterRenderer } from '../../src/renderer';
 import { clearEnv, generateRoute, getWebContents, sleep } from './utils';
-import '../src/main';
-import { listenerList, webContentsMap } from '../src/main/mainProcess';
-import { messageCenter as messageCenterMain } from '../src/main';
-import { MAIN_PROCESS_ID } from '../src/shared';
+import '../../src/main';
+import { listenerList, webContentsMap } from '../../src/main/mainProcess';
+import { messageCenter as messageCenterMain } from '../../src/main';
+import { MAIN_PROCESS_ID } from '../../src/shared';
 
 describe('listener test', () => {
   let route: string;

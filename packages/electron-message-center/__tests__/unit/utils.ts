@@ -1,5 +1,5 @@
 import { WebContents, ipcMain, ipcRenderer } from 'electron';
-import { invokeCallbackMap, listenerList, webContentsMap } from '../src/main/mainProcess';
+import { invokeCallbackMap, listenerList, webContentsMap } from '../../src/main/mainProcess';
 
 export const generateRoute = (function generateRoute() {
   let i = 1;
