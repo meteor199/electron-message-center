@@ -50,6 +50,20 @@ export const webContentsMap = new WeakMap<
     removeListener: () => void;
   }
 >();
+
+/**
+ * invoke callback map
+ * key is invokeId
+ */
+export const invokeCallbackMap = new Map<
+  number,
+  {
+    webContent: WebContents;
+    successCallback: (value: unknown) => void;
+    errorCallback: (err: Error) => void;
+  }
+>();
+
 /**
  * dispose broadcast
  * @param info message info
@@ -139,31 +153,6 @@ export function disposeInvoke(info: { route: string; sourceId: number; opts?: Op
   }
 }
 
-/**
- * invoke callback map
- * key is invokeId
- */
-export const invokeCallbackMap = new Map<
-  number,
-  {
-    webContent: WebContents;
-    successCallback: (value: unknown) => void;
-    errorCallback: (err: Error) => void;
-  }
->();
-
-ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, (event, info: ReplayInfo) => {
-  const item = invokeCallbackMap.get(info.invokeId);
-  if (item) {
-    invokeCallbackMap.delete(info.invokeId);
-    if (info.isSuccess) {
-      item.successCallback(info.data);
-    } else {
-      item.errorCallback(info.data as Error);
-    }
-  }
-});
-
 export function addListenerInMain(info: { route: string; listenerId: number }, listener: Listener) {
   listenerList.push({
     route: info.route,
@@ -212,6 +201,36 @@ export function getAllListeners(route?: string): ListenerInfo[] {
     );
 }
 
+/**
+ * Remove webContents when there are no listeners
+ * @param removed removed listeners
+ */
+function removeWebContentsWhenNoListeners(removed: ListenerItem[]) {
+  for (const item of removed) {
+    // If it is a renderer process, judge whether there is a listener
+    if (item.rendererWebContents) {
+      const data = webContentsMap.get(item.rendererWebContents)?.data;
+      if (data) {
+        data.delete(item);
+        // When there is no listener function in webContent, the close event should be unregistered and deleted from the map
+        if (data.size === 0) {
+          const removeListener = webContentsMap.get(item.rendererWebContents)!.removeListener;
+          item.rendererWebContents.removeListener('destroyed', removeListener);
+          item.rendererWebContents.removeListener('did-start-navigation', removeListener);
+          webContentsMap.delete(item.rendererWebContents);
+        }
+      }
+    }
+  }
+}
+
+ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids?: number[]; route: string }) => {
+  removeListenerInRenderer(info.route, event.sender, info.ids);
+});
+ipcMain.handle(MessageChannelEnum.RENDERER_TO_MAIN_GET_ALL_LISTENERS, (event, info: { route: string }) => {
+  return getAllListeners(info.route);
+});
+
 ipcMain.on(
   MessageChannelEnum.RENDERER_TO_MAIN_BROADCAST,
   (event, info: { route: string; opts?: Options }, ...args: unknown[]) => {
@@ -251,32 +270,14 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string
   }
 });
 
-/**
- * Remove webContents when there are no listeners
- * @param removed removed listeners
- */
-function removeWebContentsWhenNoListeners(removed: ListenerItem[]) {
-  for (const item of removed) {
-    // If it is a renderer process, judge whether there is a listener
-    if (item.rendererWebContents) {
-      const data = webContentsMap.get(item.rendererWebContents)?.data;
-      if (data) {
-        data.delete(item);
-        // When there is no listener function in webContent, the close event should be unregistered and deleted from the map
-        if (data.size === 0) {
-          const removeListener = webContentsMap.get(item.rendererWebContents)!.removeListener;
-          item.rendererWebContents.removeListener('destroyed', removeListener);
-          item.rendererWebContents.removeListener('did-start-navigation', removeListener);
-          webContentsMap.delete(item.rendererWebContents);
-        }
-      }
+ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_REPLAY, (event, info: ReplayInfo) => {
+  const item = invokeCallbackMap.get(info.invokeId);
+  if (item) {
+    invokeCallbackMap.delete(info.invokeId);
+    if (info.isSuccess) {
+      item.successCallback(info.data);
+    } else {
+      item.errorCallback(info.data as Error);
     }
   }
-}
-
-ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids?: number[]; route: string }) => {
-  removeListenerInRenderer(info.route, event.sender, info.ids);
-});
-ipcMain.handle(MessageChannelEnum.RENDERER_TO_MAIN_GET_ALL_LISTENERS, (event, info: { route: string }) => {
-  return getAllListeners(info.route);
 });
