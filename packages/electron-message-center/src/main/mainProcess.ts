@@ -255,10 +255,16 @@ ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_ON, (event, info: { route: string
     webContentsMap.get(event.sender)!.data.add(data);
   } else {
     // Ensure that a webContent is only set once
+
+    // When the webContents is destroyed or refreshed, all listeners should be reset
     const removeListener = () => {
+      // Delete all listeners in the webContents
       const removed = remove(listenerList, item => item.rendererWebContents === event.sender);
+
       removeWebContentsWhenNoListeners(removed);
     };
+
+    // If the webContent is not in the map, add it to the map
     const set = new Set<ListenerItem>();
     set.add(data);
     webContentsMap.set(event.sender, {
