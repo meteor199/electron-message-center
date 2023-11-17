@@ -15,6 +15,9 @@ export const enum MessageChannelEnum {
  * Listener information
  */
 export interface ListenerInfo {
+  /**
+   * The route to send the message to.
+   */
   route: string;
   /**
    * The webContentsId of the listener, if the listener is the main process, it is -1
@@ -28,6 +31,10 @@ export interface ListenerInfo {
  */
 export type Listener = { (event: IpcEvent, ...args: any[]): void | any | Promise<any> };
 export type Options = {
+  /**
+   * Optional timeout in milliseconds for the `invoke` method.
+   * If set, the promise will be automatically rejected if no response is received within the specified time.
+   */
   timeout?: number;
   /**
    * The webContentsId specifies the ID of the webContents. If you want to specify the main process instead, set webContentsId to -1.
