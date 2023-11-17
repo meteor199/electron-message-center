@@ -9,6 +9,6 @@
         "electron-message-center": "*"
     },
     "devDependencies": {
-        "electron": "22.3.9"
+        "electron": "22.3.25"
     }
 }
