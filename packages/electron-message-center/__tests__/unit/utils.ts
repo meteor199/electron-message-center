@@ -3,7 +3,7 @@ import { invokeCallbackMap, listenerList, webContentsMap } from '../../src/main/
 
 export const generateRoute = (function generateRoute() {
   let i = 1;
-  return () => `${i++}`; // eslint-disable-line no-plusplus
+  return () => `${i++}`;
 })();
 
 export const getWebContents = () => {

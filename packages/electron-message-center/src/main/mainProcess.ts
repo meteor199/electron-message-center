@@ -1,4 +1,4 @@
-import { ipcMain, WebContents } from 'electron'; // eslint-disable-line
+import { ipcMain, WebContents } from 'electron';  
 import {
   ListenerInfo,
   MessageChannelEnum,
