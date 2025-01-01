@@ -1,4 +1,4 @@
-import { UserConfig } from 'vitest/config';
+import { ViteUserConfig } from 'vitest/config';
 import config from './vitest.config';
 
 export default {
@@ -9,4 +9,4 @@ export default {
     maxConcurrency: 1,
     include: ['packages/electron-message-center/__tests__/e2e/*.spec.ts'],
   },
-} as UserConfig;
+} as ViteUserConfig;

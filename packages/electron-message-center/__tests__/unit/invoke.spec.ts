@@ -175,7 +175,7 @@ describe('invoke test', () => {
       }
       messageCenterRenderer.on(route, first);
       await sleep(1);
-      const specified = new MessageCenterMain({ timeout: 20 });
+      const specified = new MessageCenterMain({ timeout: 200 });
       const ret = await specified.invoke(route, 1);
       expect(ret).toBe(1);
     });

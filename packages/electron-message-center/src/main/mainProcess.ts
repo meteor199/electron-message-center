@@ -194,10 +194,10 @@ export function getAllListeners(route?: string): ListenerInfo[] {
     .filter(item => (route ? item.route === route : true))
     .map(
       item =>
-        ({
-          route: item.route,
-          webContentId: item.webContentsId,
-        } as ListenerInfo)
+      ({
+        route: item.route,
+        webContentId: item.webContentsId,
+      } as ListenerInfo)
     );
 }
 
@@ -223,7 +223,7 @@ function removeWebContentsWhenNoListeners(removed: ListenerItem[]) {
     }
   }
 }
-
+console.log('ipcMain', ipcMain)
 ipcMain.on(MessageChannelEnum.RENDERER_TO_MAIN_OFF, (event, info: { ids?: number[]; route: string }) => {
   removeListenerInRenderer(info.route, event.sender, info.ids);
 });

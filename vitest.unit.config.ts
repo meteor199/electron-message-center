@@ -1,15 +1,14 @@
-import { UserConfig, configDefaults } from 'vitest/config';
-import config from './vitest.config';
+import { defineConfig, mergeConfig } from 'vitest/config';
+import baseConfig from './vitest.config';
+import { resolve } from 'path';
 
-export default {
-  ...config,
-  resolve: {
-    alias: {
-      electron: './scripts/electronMock.ts',
+export default defineConfig((configEnv) =>
+  mergeConfig(baseConfig, {
+    test: {
+      alias: {
+        electron: resolve('./scripts/electronMock.ts'),
+      },
+      exclude: ['**/e2e/**', '**/node_modules/**', '**/dist/**'],
     },
-  },
-  test: {
-    ...config.test,
-    exclude: [...configDefaults.exclude, '**/e2e/**'],
-  },
-} as UserConfig;
+  })
+);

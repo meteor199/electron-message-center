@@ -1,15 +1,29 @@
 import createIPCMock from 'electron-mock-ipc';
 import type { WebContents } from 'electron';
+import EventEmitter from 'events';
+
 const mocked = createIPCMock();
 const ipcMain = mocked.ipcMain;
-
-import EventEmitter from 'events';
+const ipcRenderer = mocked.ipcRenderer;
 const eventEmitter = new EventEmitter();
 
-const ipcRenderer = mocked.ipcRenderer;
-
 mockWebContents();
+
+// Mock the entire electron module
+const electron = {
+  ipcMain,
+  ipcRenderer,
+  // Add other electron APIs as needed
+  app: {
+    getPath: () => '',
+    getName: () => 'electron-message-center',
+    getVersion: () => '1.0.0',
+  },
+};
+
+// Export both named exports and default export
 export { ipcMain, ipcRenderer };
+export default electron;
 
 function mockWebContents() {
   ipcMain.on('mock', event => {
