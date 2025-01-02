@@ -9,6 +9,9 @@ export default defineConfig((configEnv) =>
         electron: resolve('./scripts/electronMock.ts'),
       },
       exclude: ['**/e2e/**', '**/node_modules/**', '**/dist/**'],
+      coverage: {
+        include: ['packages/electron-message-center/src/**']
+      }
     },
   })
 );
