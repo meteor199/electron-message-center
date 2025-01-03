@@ -22,7 +22,7 @@ export function setupElectron() {
   let route = '';
   beforeAll(async () => {
     electronApp = await electron.launch({
-      args: ['packages/example/index.js', '--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['../example/electron22/index.js', '--no-sandbox', '--disable-setuid-sandbox'],
     });
     await electronApp.waitForEvent('window');
     await electronApp.waitForEvent('window');

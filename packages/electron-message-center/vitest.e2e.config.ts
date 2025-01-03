@@ -6,6 +6,6 @@ export default mergeConfig(config, {
   test: {
     hookTimeout: 100000,
     maxConcurrency: 1,
-    include: ['packages/electron-message-center/__tests__/e2e/*.spec.ts'],
+    include: ['__tests__/e2e/*.spec.ts'],
   },
 } as ViteUserConfig);

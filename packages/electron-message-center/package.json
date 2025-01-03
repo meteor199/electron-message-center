@@ -4,7 +4,11 @@
   "description": "Supports inter-window communication.",
   "scripts": {
     "build": "rimraf dist && tsc -p tsconfig.build.json && babel src --out-dir dist --source-maps",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "test-unit": "vitest -c vitest.unit.config.ts",
+    "test-e2e": "vitest -c vitest.e2e.config.ts",
+    "test-ui": "vitest -c vitest.unit.config.ts --ui",
+    "coverage": "vitest run  -c vitest.unit.config.ts --coverage"
   },
   "main": "dist/renderer/index.js",
   "types": "dist/renderer/index.d.ts",
@@ -32,9 +36,14 @@
     "electron": "^22.3.27",
     "mkdirp": "^3.0.1",
     "rimraf": "^6.0.1",
+    "electron-mock-ipc": "^0.3.12",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@vitest/coverage-istanbul": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "playwright": "^1.49.1",
+    "vitest": "^2.1.8"
   },
   "keywords": [
     "electron",

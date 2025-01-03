@@ -10,7 +10,7 @@ export default defineConfig((configEnv) =>
       },
       exclude: ['**/e2e/**', '**/node_modules/**', '**/dist/**'],
       coverage: {
-        include: ['packages/electron-message-center/src/**']
+        include: ['./src/**']
       }
     },
   })

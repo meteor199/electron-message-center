@@ -18,10 +18,21 @@
     "esModuleInterop": true,
     "removeComments": false,
     "jsx": "preserve",
-    "lib": ["esnext", "dom"],
-    "types": ["vitest/globals", "node"],
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
     "rootDir": ".",
     "paths": {}
   },
-  "include": ["packages/global.d.ts", "packages/*/src", "packages/*/__tests__", "scripts/setupVitest.ts"]
+  "include": [
+    "packages/global.d.ts",
+    "packages/*/src",
+    "packages/*/__tests__",
+    "packages/electron-message-center/scripts/setupVitest.ts"
+  ]
 }
