@@ -9,6 +9,6 @@
         "electron-message-center": "workspace:*"
     },
     "devDependencies": {
-        "electron": "^22.3.27"
+        "electron": "^35.7.5"
     }
 }
