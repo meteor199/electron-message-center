@@ -31,7 +31,7 @@
     "@babel/register": "^7.25.9",
     "@types/node": "^20.17.11",
     "cross-env": "^7.0.3",
-    "electron": "^22.3.27",
+    "electron": "^39.8.4",
     "mkdirp": "^3.0.1",
     "rimraf": "^6.0.1",
     "electron-mock-ipc": "^0.3.12",
